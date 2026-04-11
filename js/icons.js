@@ -54,5 +54,31 @@ export const upgradeIcons = {
             <circle cx="19" cy="18" r="4" fill="#ffb703"/>
             <circle cx="45" cy="18" r="4" fill="#ffb703"/>
         </svg>
+    `),
+    heal: createIcon(`
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+            <path fill="#2a9d8f" d="M32 4 L48 20 V44 L32 60 L16 44 V20 Z"/>
+            <rect x="28" y="20" width="8" height="24" fill="#e9c46a"/>
+            <rect x="20" y="28" width="24" height="8" fill="#e9c46a"/>
+        </svg>
+    `),
+
+    piercing: createIcon(`
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+            <path fill="#e76f51" d="M10 32 L54 32" stroke="#e76f51" stroke-width="6" stroke-linecap="round"/>
+            <polygon points="44,22 60,32 44,42" fill="#e76f51"/>
+            <circle cx="24" cy="32" r="14" fill="none" stroke="#f4a261" stroke-width="4" stroke-dasharray="6,4"/>
+        </svg>
+    `),
+
+    spreadShot: createIcon(`
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+            <path d="M16 48 L48 16" stroke="#48cae4" stroke-width="6" stroke-linecap="round"/>
+            <path d="M32 54 L32 10" stroke="#0077b6" stroke-width="6" stroke-linecap="round"/>
+            <path d="M48 48 L16 16" stroke="#48cae4" stroke-width="6" stroke-linecap="round"/>
+            <circle cx="48" cy="16" r="6" fill="#caf0f8"/>
+            <circle cx="32" cy="10" r="6" fill="#caf0f8"/>
+            <circle cx="16" cy="16" r="6" fill="#caf0f8"/>
+        </svg>
     `)
 };

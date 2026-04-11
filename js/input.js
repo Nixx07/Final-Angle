@@ -37,4 +37,21 @@ export function setupInput() {
         if (game.state !== GAME_STATES.PLAYING) return;
         updatePlayerAngle(event.clientX, event.clientY);
     });
+
+    window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' && game.dashCooldown <= 0 && game.state === GAME_STATES.PLAYING) {
+            performDash();
+        }
+    });
+
+    function performDash() {
+        game.isDashing = true;
+        game.dashCooldown = 60;
+        player.radius *= 0.8; 
+        
+        setTimeout(() => {
+            game.isDashing = false;
+            player.radius = 40;
+        }, 150);
+    }
 }

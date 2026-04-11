@@ -2,27 +2,47 @@ import { canvas } from './config.js';
 import { player, game, projectiles } from './state.js';
 import { getBulletColor } from './player.js';
 
-export function createBullet(angleOffset = 0) {
+/**
+ * Cria um projétil com suporte a deslocamento lateral (sideOffset) 
+ * para tiros paralelos (Double Shot).
+ */
+export function createBullet(angleOffset = 0, sideOffset = 0) {
     const angle = player.angle + angleOffset;
+    
+    // Calcula o deslocamento perpendicular à direção do tiro para criar tiros paralelos
+    const perpX = Math.cos(angle + Math.PI / 2) * sideOffset;
+    const perpY = Math.sin(angle + Math.PI / 2) * sideOffset;
 
-    projectiles.push({
-        x: player.x + Math.cos(angle) * 70,
-        y: player.y + Math.sin(angle) * 70,
+    const bullet = {
+        x: player.x + Math.cos(angle) * 70 + perpX,
+        y: player.y + Math.sin(angle) * 70 + perpY,
         vx: Math.cos(angle) * game.projectileSpeed,
         vy: Math.sin(angle) * game.projectileSpeed,
         damage: player.damage,
-        color: getBulletColor()
-    });
+        color: getBulletColor(),
+        pierceCount: player.pierceCount || 1,
+        trail: []
+    };
+
+    projectiles.push(bullet);
 }
 
 export function shoot(timestamp) {
     if (!game.isShooting) return;
     if (timestamp - game.lastShotTime <= game.fireRate) return;
 
-    createBullet();
-
-    if (player.hasDoubleShot) {
-        createBullet(0.15);
+    if (player.hasSpreadShot) {
+        // Tiro Triplo (Leque)
+        createBullet(0);
+        createBullet(-0.20);
+        createBullet(0.20);
+    } else if (player.hasDoubleShot) {
+        // CORREÇÃO: Tiro Duplo agora é PARALELO (lado a lado), não em "V"
+        // Isso permite que você acerte o inimigo que está exatamente na mira
+        createBullet(0, -12); // Bala esquerda
+        createBullet(0, 12);  // Bala direita
+    } else {
+        createBullet(0);
     }
 
     game.lastShotTime = timestamp;
@@ -32,14 +52,20 @@ export function updateProjectiles() {
     for (let i = projectiles.length - 1; i >= 0; i--) {
         const projectile = projectiles[i];
 
+        if (!projectile.trail) projectile.trail = []; 
+        projectile.trail.push({ x: projectile.x, y: projectile.y });
+        
+        // Mantém um rastro curto para performance e visual
+        if (projectile.trail.length > 8) projectile.trail.shift();
+
         projectile.x += projectile.vx;
         projectile.y += projectile.vy;
 
         const isOutOfBounds =
-            projectile.x < 0 ||
-            projectile.x > canvas.width ||
-            projectile.y < 0 ||
-            projectile.y > canvas.height;
+            projectile.x < -100 ||
+            projectile.x > canvas.width + 100 ||
+            projectile.y < -100 ||
+            projectile.y > canvas.height + 100;
 
         if (isOutOfBounds) {
             projectiles.splice(i, 1);

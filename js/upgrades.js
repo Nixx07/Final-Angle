@@ -18,26 +18,23 @@ function getRandomWeightedUpgrade(pool) {
     return 0;
 }
 
-export function startLevelUp() {
-    game.state = GAME_STATES.LEVELING;
-    game.isShooting = false;
-    game.currentUpgradeOptions = [];
-
-    const availableUpgrades = [...powerUps];
-
-    for (let i = 0; i < 3; i++) {
-        const selectedIndex = getRandomWeightedUpgrade(availableUpgrades);
-        game.currentUpgradeOptions.push(availableUpgrades[selectedIndex]);
-        availableUpgrades.splice(selectedIndex, 1);
-    }
+function getAvailableUpgrades() {
+    return powerUps.filter(upg => {
+        if (upg.condition) return upg.condition(player);
+        return true;
+    });
 }
 
-export function applyUpgrade(upgradeId) {
+function applyUpgradeEffect(upgradeId) {
     player.stats[upgradeId]++;
 
     if (upgradeId === 'hp') {
         player.maxHp++;
         player.hp++;
+    }
+
+    if (upgradeId === 'heal') {
+        player.hp = Math.min(player.hp + 1, player.maxHp);
     }
 
     if (upgradeId === 'fireRate') {
@@ -56,15 +53,54 @@ export function applyUpgrade(upgradeId) {
         player.shield = 2;
     }
 
+    if (upgradeId === 'piercing') {
+        player.pierceCount++;
+    }
+
     if (upgradeId === 'doubleShot') {
         player.hasDoubleShot = true;
     }
+
+    if (upgradeId === 'spreadShot') {
+        player.hasSpreadShot = true;
+    }
+}
+
+export function startLevelUp() {
+    game.state = GAME_STATES.LEVELING;
+    game.isShooting = false;
+    game.currentUpgradeOptions = [];
+
+    const availableUpgrades = getAvailableUpgrades();
+
+    for (let i = 0; i < 3; i++) {
+        if (availableUpgrades.length === 0) break;
+
+        const selectedIndex = getRandomWeightedUpgrade(availableUpgrades);
+        game.currentUpgradeOptions.push(availableUpgrades[selectedIndex]);
+        availableUpgrades.splice(selectedIndex, 1);
+    }
+}
+
+export function applyUpgrade(upgradeId) {
+    applyUpgradeEffect(upgradeId);
 
     player.currentXp -= player.nextLevelXp;
     player.level++;
     player.nextLevelXp = Math.floor(player.nextLevelXp * 1.5);
 
     game.state = GAME_STATES.PLAYING;
+}
+
+export function applyRandomFreeUpgrade() {
+    const availableUpgrades = getAvailableUpgrades();
+    if (availableUpgrades.length === 0) return null;
+
+    const selectedIndex = getRandomWeightedUpgrade(availableUpgrades);
+    const selected = availableUpgrades[selectedIndex];
+
+    applyUpgradeEffect(selected.id);
+    return selected;
 }
 
 export function forceLevelUpForTest() {
