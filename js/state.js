@@ -15,7 +15,10 @@ export const player = {
     level: 1,
     currentXp: 0,
     nextLevelXp: 200,
-    dashPower: 0, // <--- Adicionado aqui
+    invincibleTimer: 0,
+    dashTimer: 0,
+    dashDirection: 0,
+    dashSpeed: 0,
     stats: {
         hp: 1, heal: 0, fireRate: 1, speed: 1,
         damage: 1, shield: 0, piercing: 0,
@@ -25,7 +28,7 @@ export const player = {
 
 export const game = {
     state: GAME_STATES.PLAYING,
-    fireRate: 500,
+    fireRate: 450,
     projectileSpeed: 5,
     isShooting: false,
     lastShotTime: 0,

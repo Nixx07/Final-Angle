@@ -1,7 +1,7 @@
 import { canvas, GAME_STATES } from './config.js';
-import { game } from './state.js';
+import { game, player } from './state.js';
 import { updatePlayerAngle, resizeCanvas } from './player.js';
-import { checkUpgradeClick, forceLevelUpForTest } from './upgrades.js';
+import { checkUpgradeClick, forceLevelUpForTest, prepareBossLevel20Test } from './upgrades.js';
 
 export function setupInput() {
     window.addEventListener('resize', resizeCanvas);
@@ -42,16 +42,18 @@ export function setupInput() {
         if (e.code === 'Space' && game.dashCooldown <= 0 && game.state === GAME_STATES.PLAYING) {
             performDash();
         }
+
+        if (e.key.toLowerCase() === 'w' && game.state === GAME_STATES.PLAYING) {
+            prepareBossLevel20Test();
+        }
     });
 
     function performDash() {
         game.isDashing = true;
-        game.dashCooldown = 60;
-        player.radius *= 0.8; 
-        
-        setTimeout(() => {
-            game.isDashing = false;
-            player.radius = 40;
-        }, 150);
+        game.dashCooldown = 45;
+        player.dashTimer = 14;
+        player.dashDirection = player.angle;
+        player.dashSpeed = 20;
+        player.radius = 32;
     }
 }

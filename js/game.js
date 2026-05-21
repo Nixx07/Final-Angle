@@ -1,4 +1,4 @@
-import { resizeCanvas } from './player.js';
+import { resizeCanvas, updatePlayerDash } from './player.js';
 import { setupInput } from './input.js';
 import { spawnEnemy, updateEnemies } from './enemies.js';
 import { updateProjectiles, shoot } from './projectiles.js';
@@ -8,14 +8,11 @@ import { game } from './state.js';
 import { GAME_STATES } from './config.js';
 
 function update(timestamp) {
-    if (game.state === GAME_STATES.GAME_OVER) return;
-    if (game.state === GAME_STATES.LEVELING) return;
+    if (game.state !== GAME_STATES.PLAYING) return;
 
-    if (game.state === GAME_STATES.PLAYING) {
-        shoot(timestamp);
-        updateProjectiles();
-    }
-
+    updatePlayerDash();
+    shoot(timestamp);
+    updateProjectiles();
     updateEnemies();
     updateParticles();
 }
@@ -28,5 +25,10 @@ function gameLoop(timestamp) {
 
 resizeCanvas();
 setupInput();
-setInterval(spawnEnemy, 900);
+setInterval(() => {
+    if (game.state === GAME_STATES.PLAYING) {
+        spawnEnemy();
+    }
+}, 600);
+
 requestAnimationFrame(gameLoop);

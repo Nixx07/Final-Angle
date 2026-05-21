@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Angle - Menu</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="menu-overlay">
+        <div class="menu-card">
+            <h1>Final Angle</h1>
+            <p>Jogo de tiro com upgrades rápidos e chefes desafiadores. Clique em jogar para começar ou leia o tutorial para aprender os controles.</p>
+            
+            <div class="menu-buttons">
+                <a href="index.html" class="btn primary">Começar Jogo</a>
+                <button id="tutorialBtn" class="btn secondary">Tutorial</button>
+            </div>
+            
+            <p class="menu-hint">No jogo, pressione <strong>W</strong> para ir direto ao nível 20 com upgrades de teste.</p>
+        </div>
+    </div>
+
+    <div id="tutorialModal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Controles do Jogo</h2>
+            <ul>
+                <li><strong>Mouse</strong> mira em tempo real</li>
+                <li><strong>Clique Esq.</strong> dispara a arma</li>
+                <li><strong>Espaço</strong> usa o dash</li>
+                <li><strong>Tecla W</strong> atalho para o nível 20</li>
+            </ul>
+            <button id="closeTutorialBtn" class="btn primary">Entendi</button>
+        </div>
+    </div>
+
+    <script>
+        const tutorialBtn = document.getElementById('tutorialBtn');
+        const modal = document.getElementById('tutorialModal');
+        const closeBtn = document.getElementById('closeTutorialBtn');
+
+        // Abrir modal
+        tutorialBtn.addEventListener('click', () => {
+            modal.classList.remove('hidden');
+        });
+
+        // Fechar modal pelo botão
+        closeBtn.addEventListener('click', () => {
+            modal.classList.add('hidden');
+        });
+
+        // Fechar modal clicando fora dele
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

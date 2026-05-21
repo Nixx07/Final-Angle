@@ -3,16 +3,15 @@ import { player, game, enemies, projectiles, particles, damageNumbers, pickups }
 import { upgradeIcons } from './icons.js';
 
 function drawDamageNumbers() {
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 20px Arial';
+    ctx.textAlign = 'center';
+
     for (let i = damageNumbers.length - 1; i >= 0; i--) {
         const d = damageNumbers[i];
 
-        ctx.save();
         ctx.globalAlpha = d.alpha;
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 20px Arial';
-        ctx.textAlign = 'center';
         ctx.fillText(`-${d.val}`, d.x, d.y);
-        ctx.restore();
 
         d.y -= 1;
         d.alpha -= 0.02;
@@ -22,6 +21,8 @@ function drawDamageNumbers() {
             damageNumbers.splice(i, 1);
         }
     }
+
+    ctx.globalAlpha = 1;
 }
 
 function drawProjectileTrails() {
@@ -141,36 +142,49 @@ function drawBoss(enemy) {
 }
 
 function drawVoidWeaver(boss) {
-    const time = Date.now() * 0.002;
+    const time = Date.now() * 0.003;
 
     ctx.translate(boss.x, boss.y);
-    ctx.rotate(time * 0.5);
+    ctx.rotate(time * 0.4);
 
-    ctx.beginPath();
+    const glow = boss.hitFlash > 0 ? '#ffffff' : boss.secondaryColor;
+    const core = boss.hitFlash > 0 ? '#cfd8dc' : boss.color;
+    const inner = boss.hitFlash > 0 ? '#ffffff' : '#000000';
+    const ringRadius = boss.radius + Math.sin(time * 3) * 5;
+
+    ctx.strokeStyle = glow;
+    ctx.lineWidth = 3;
     for (let i = 0; i < 6; i++) {
-        const angle = (i * Math.PI) / 3;
-        const r = boss.radius + Math.sin(time * 2) * 5;
-        const x = Math.cos(angle) * r;
-        const y = Math.sin(angle) * r;
+        const angle = (Math.PI * 2 / 6) * i + time * 0.5;
+        const startX = Math.cos(angle) * (boss.radius - 10);
+        const startY = Math.sin(angle) * (boss.radius - 10);
+        const endX = Math.cos(angle) * (ringRadius + 10);
+        const endY = Math.sin(angle) * (ringRadius + 10);
 
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
     }
-    ctx.closePath();
 
-    ctx.fillStyle = boss.hitFlash > 0 ? '#ffffff' : '#6200ea';
+    ctx.beginPath();
+    ctx.arc(0, 0, boss.radius, 0, Math.PI * 2);
+    ctx.fillStyle = core;
     ctx.fill();
 
-    ctx.strokeStyle = '#00e5ff';
-    ctx.lineWidth = 4;
+    ctx.strokeStyle = glow;
+    ctx.lineWidth = 5;
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.arc(0, 0, 15, 0, Math.PI * 2);
-    ctx.fillStyle = '#000';
+    ctx.arc(0, 0, boss.radius * 0.55, 0, Math.PI * 2);
+    ctx.fillStyle = inner;
     ctx.fill();
-    ctx.strokeStyle = '#ff00ff';
-    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(0, 0, 14 + Math.sin(time * 4) * 3, 0, Math.PI * 2);
+    ctx.fillStyle = '#84ffff';
+    ctx.fill();
 }
 
 function drawOctagon(enemy) {
@@ -380,6 +394,11 @@ function drawShield() {
 function drawPlayer() {
     ctx.save();
 
+    if (player.invincibleTimer > 0) {
+        const blink = Math.floor(player.invincibleTimer / 6) % 2 === 0;
+        ctx.globalAlpha = blink ? 1 : 0.25;
+    }
+
     if (game.isDashing) {
         ctx.shadowBlur = 20;
         ctx.shadowColor = '#00e5ff';
@@ -404,7 +423,7 @@ function drawPlayer() {
     ctx.fillRect(player.x - 20, player.y + 30, 40, 5);
 
     ctx.fillStyle = game.dashCooldown <= 0 ? '#00e5ff' : '#555';
-    const dashProgress = Math.max(0, (60 - (game.dashCooldown || 0)) / 60);
+    const dashProgress = Math.max(0, (45 - (game.dashCooldown || 0)) / 45);
     ctx.fillRect(player.x - 20, player.y + 30, 40 * dashProgress, 5);
 }
 

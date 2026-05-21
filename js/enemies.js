@@ -12,7 +12,7 @@ function createBaseEnemy() {
         type: 'sphere',
         radius: 22,
         hp: 1,
-        xp: 20,
+        xp: 24,
         color: '#ff80ab',
         speedMin: 1.2,
         speedMax: 2.2,
@@ -32,7 +32,7 @@ function createEnemyByLevel() {
                 type: 'triangle',
                 radius: 22,
                 hp: 2,
-                xp: 35,
+                xp: 40,
                 color: '#f44336',
                 speedMin: 1.5,
                 speedMax: 2.4,
@@ -43,7 +43,7 @@ function createEnemyByLevel() {
                 type: 'square',
                 radius: 26,
                 hp: 3,
-                xp: 85,
+                xp: 95,
                 color: '#0d47a1',
                 speedMin: 1.2,
                 speedMax: 2.2,
@@ -54,7 +54,7 @@ function createEnemyByLevel() {
                 type: 'diamond',
                 radius: 26,
                 hp: 3,
-                xp: 55,
+                xp: 65,
                 color: '#4caf50',
                 speedMin: 2.4,
                 speedMax: 3.2,
@@ -69,7 +69,7 @@ function createEnemyByLevel() {
                 type: 'triangle',
                 radius: 22,
                 hp: 2,
-                xp: 35,
+                xp: 40,
                 color: '#f44336',
                 speedMin: 1.5,
                 speedMax: 2.4,
@@ -80,7 +80,7 @@ function createEnemyByLevel() {
                 type: 'square',
                 radius: 26,
                 hp: 3,
-                xp: 85,
+                xp: 95,
                 color: '#0d47a1',
                 speedMin: 1.2,
                 speedMax: 2.2,
@@ -91,7 +91,7 @@ function createEnemyByLevel() {
                 type: 'diamond',
                 radius: 26,
                 hp: 3,
-                xp: 55,
+                xp: 65,
                 color: '#4caf50',
                 speedMin: 2.4,
                 speedMax: 3.2,
@@ -106,7 +106,7 @@ function createEnemyByLevel() {
                 type: 'diamond',
                 radius: 26,
                 hp: 3,
-                xp: 55,
+                xp: 65,
                 color: '#4caf50',
                 speedMin: 2.4,
                 speedMax: 3.2,
@@ -117,7 +117,7 @@ function createEnemyByLevel() {
                 type: 'triangle',
                 radius: 22,
                 hp: 2,
-                xp: 35,
+                xp: 40,
                 color: '#f44336',
                 speedMin: 1.5,
                 speedMax: 2.4,
@@ -131,7 +131,7 @@ function createEnemyByLevel() {
             type: 'triangle',
             radius: 22,
             hp: 2,
-            xp: 35,
+            xp: 40,
             color: '#f44336',
             speedMin: 1.5,
             speedMax: 2.4,
@@ -154,7 +154,7 @@ function createSwarmEnemy() {
         type: 'swarm',
         radius: 16,
         hp: 1,
-        xp: 30,
+        xp: 35,
         color: '#ffd54f',
         damage: 1,
         hitFlash: 0,
@@ -273,7 +273,8 @@ function dropEliteReward(enemy) {
         y: enemy.y,
         radius: kind === 'heal' ? 14 : 18,
         pulse: 0,
-        life: 1200
+        life: 1200,
+        speed: 3
     });
 }
 
@@ -345,17 +346,19 @@ function spawnLevel20Boss() {
     const boss = {
         type: 'voidWeaver',
         x: canvas.width / 2,
-        y: -100,
-        hp: 500,
-        maxHp: 500,
-        xp: 25000,
-        radius: 60,
+        y: -120,
+        hp: 2100,
+        maxHp: 2100,
+        xp: 20000,
+        radius: 72,
         phase: 'entering',
         attackTimer: 0,
         angle: 0,
-        color: '#6200ea',
-        secondaryColor: '#00e5ff',
-        hitFlash: 0
+        color: '#004d40',
+        secondaryColor: '#00bfa5',
+        hitFlash: 0,
+        driftAngle: 0,
+        orbitPhase: 0
     };
 
     enemies.push(boss);
@@ -366,12 +369,15 @@ function spawnLevel20Boss() {
 
 function updateVoidWeaver(boss) {
     boss.attackTimer++;
+    boss.orbitPhase += 0.04;
+    boss.driftAngle += 0.01;
+    boss.pulse = (boss.pulse || 0) + 0.05;
 
     if (boss.phase === 'entering') {
         boss.y += 2;
 
-        if (boss.y >= 150) {
-            boss.y = 150;
+        if (boss.y >= 160) {
+            boss.y = 160;
             boss.phase = 'attack1';
             boss.attackTimer = 0;
         }
@@ -379,46 +385,88 @@ function updateVoidWeaver(boss) {
         return;
     }
 
-    if (boss.phase === 'attack1') {
-        boss.x += Math.sin(Date.now() / 500) * 5;
+    boss.x += Math.sin(boss.driftAngle) * 1.8;
+    boss.y += Math.sin(boss.driftAngle * 0.8) * 0.9;
 
-        if (boss.attackTimer % 40 === 0) {
-            spawnBulletRing(boss.x, boss.y, 12, 3);
+    if (boss.phase === 'attack1') {
+        if (boss.attackTimer % 90 === 0) {
+            spawnBulletRing(boss.x, boss.y, 4, 3, '#18ffff');
         }
 
-        if (boss.attackTimer > 400) {
+        if (boss.attackTimer % 180 === 0) {
+            spawnVoidBurst(boss);
+        }
+
+        if (boss.attackTimer > 300) {
             boss.phase = 'attack2';
             boss.attackTimer = 0;
         }
 
+        boss.x = Math.max(boss.radius + 20, Math.min(canvas.width - boss.radius - 20, boss.x));
+        boss.y = Math.max(80, Math.min(canvas.height - boss.radius - 100, boss.y));
         return;
     }
 
     if (boss.phase === 'attack2') {
-        if (boss.attackTimer < 60) {
+        if (boss.attackTimer === 1) {
             boss.targetAngle = Math.atan2(player.y - boss.y, player.x - boss.x);
-        } else if (boss.attackTimer === 60) {
-            game.screenShake = 10;
-        } else {
-            boss.x += Math.cos(boss.targetAngle) * 25;
-            boss.y += Math.sin(boss.targetAngle) * 25;
         }
 
-        if (
-            boss.x < -100 ||
-            boss.x > canvas.width + 100 ||
-            boss.y < -150 ||
-            boss.y > canvas.height + 100
-        ) {
-            boss.x = canvas.width / 2;
-            boss.y = -50;
+        if (boss.attackTimer < 35) {
+            boss.x += Math.cos(boss.targetAngle) * 4;
+            boss.y += Math.sin(boss.targetAngle) * 3;
+        } else if (boss.attackTimer % 30 === 0) {
+            spawnTargetedVolley(boss, 2, 3.5);
+        }
+
+        if (boss.attackTimer > 100) {
             boss.phase = 'attack1';
             boss.attackTimer = 0;
         }
     }
+
+    boss.x = Math.max(boss.radius + 10, Math.min(canvas.width - boss.radius - 10, boss.x));
+    boss.y = Math.max(boss.radius + 20, Math.min(canvas.height - boss.radius - 100, boss.y));
 }
 
-function spawnBulletRing(x, y, count, speed) {
+function spawnVoidBurst(boss) {
+    const ringCount = 4;
+
+    for (let i = 0; i < ringCount; i++) {
+        const angle = (Math.PI * 2 / ringCount) * i + boss.orbitPhase;
+
+        projectiles.push({
+            x: boss.x + Math.cos(angle) * 40,
+            y: boss.y + Math.sin(angle) * 40,
+            vx: Math.cos(angle) * 4,
+            vy: Math.sin(angle) * 4,
+            enemyBullet: true,
+            damage: 0.5,
+            color: '#64ffda',
+            radius: 6
+        });
+    }
+}
+
+function spawnTargetedVolley(boss, count, speed) {
+    for (let i = 0; i < count; i++) {
+        const offset = (i - (count - 1) / 2) * 0.35;
+        const angle = boss.targetAngle + offset;
+
+        projectiles.push({
+            x: boss.x + Math.cos(angle) * 30,
+            y: boss.y + Math.sin(angle) * 30,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            enemyBullet: true,
+            damage: 0.5,
+            color: '#82fff4',
+            radius: 7
+        });
+    }
+}
+
+function spawnBulletRing(x, y, count, speed, color = '#00e5ff') {
     for (let i = 0; i < count; i++) {
         const angle = (Math.PI * 2 / count) * i;
 
@@ -428,7 +476,7 @@ function spawnBulletRing(x, y, count, speed) {
             vx: Math.cos(angle) * speed,
             vy: Math.sin(angle) * speed,
             enemyBullet: true,
-            color: '#00e5ff',
+            color,
             radius: 8
         });
     }
@@ -523,9 +571,17 @@ export function updatePickups() {
         pickup.pulse += 0.05;
         pickup.life--;
 
-        const distanceToPlayer = Math.hypot(player.x - pickup.x, player.y - pickup.y);
+        const dx = player.x - pickup.x;
+        const dy = player.y - pickup.y;
+        const distance = Math.hypot(dx, dy);
 
-        if (distanceToPlayer < 45) {
+        if (distance > 0) {
+            const speed = pickup.speed || 3;
+            pickup.x += (dx / distance) * speed;
+            pickup.y += (dy / distance) * speed;
+        }
+
+        if (distance < 45) {
             if (pickup.kind === 'heal') {
                 player.hp = Math.min(player.hp + 1, player.maxHp);
             } else if (pickup.kind === 'chest') {
@@ -546,14 +602,18 @@ export function updatePickups() {
 // Dano no player
 // =========================
 
-function damagePlayer(amount) {
+export function damagePlayer(amount) {
+    if (player.invincibleTimer > 0) return;
+
     if (player.shield > 0) {
         player.shield--;
         game.screenShake = 15;
+        player.invincibleTimer = 120;
         return;
     }
 
     player.hp -= amount;
+    player.invincibleTimer = 120;
     game.screenShake = 20;
 
     if (player.hp <= 0) {
@@ -638,23 +698,50 @@ export function updateEnemies() {
 
         for (let j = projectiles.length - 1; j >= 0; j--) {
             const bullet = projectiles[j];
+            if (bullet.enemyBullet) continue;
+
             const hitDistance =
                 enemy.type === 'boss' || enemy.type === 'voidWeaver'
                     ? enemy.radius + 10
                     : enemy.radius;
 
             if (Math.hypot(enemy.x - bullet.x, enemy.y - bullet.y) < hitDistance) {
-                enemy.hp -= bullet.damage || 1;
-                enemy.hitFlash = 5;
-                game.screenShake = Math.max(game.screenShake, enemy.elite ? 5 : 3);
+                const damageValue = bullet.damage || 1;
+                enemy.hp -= damageValue;
+                const isBossEnemy = enemy.type === 'boss' || enemy.type === 'voidWeaver';
 
-                damageNumbers.push({
-                    x: enemy.x,
-                    y: enemy.y,
-                    val: bullet.damage || 1,
-                    alpha: 1,
-                    life: enemy.elite ? 50 : 40
-                });
+                if (!isBossEnemy) {
+                    enemy.hitFlash = 5;
+                    game.screenShake = Math.max(game.screenShake, enemy.elite ? 5 : 3);
+                }
+
+                if (isBossEnemy) {
+                    if (enemy.lastDamageNumber && enemy.lastDamageNumber.life > 0) {
+                        enemy.lastDamageNumber.val += damageValue;
+                        enemy.lastDamageNumber.alpha = 1;
+                        enemy.lastDamageNumber.life = 25;
+                        enemy.lastDamageNumber.x = enemy.x;
+                        enemy.lastDamageNumber.y = enemy.y;
+                    } else {
+                        const damageNumber = {
+                            x: enemy.x,
+                            y: enemy.y,
+                            val: damageValue,
+                            alpha: 1,
+                            life: 25
+                        };
+                        damageNumbers.push(damageNumber);
+                        enemy.lastDamageNumber = damageNumber;
+                    }
+                } else {
+                    damageNumbers.push({
+                        x: enemy.x,
+                        y: enemy.y,
+                        val: damageValue,
+                        alpha: 1,
+                        life: enemy.elite ? 50 : 40
+                    });
+                }
 
                 if (!bullet.hits) {
                     bullet.hits = [];

@@ -2,6 +2,7 @@ export const canvas = document.getElementById('gameCanvas');
 export const ctx = canvas.getContext('2d');
 
 export const GAME_STATES = {
+    MENU: 'menu',
     PLAYING: 'playing',
     LEVELING: 'leveling',
     BOSS_ENTERING: 'bossEntering',
@@ -28,7 +29,7 @@ export const powerUps = [
         name: 'Cadência',
         desc: 'Atira mais rápido',
         weight: 10,
-        condition: () => true
+        condition: (player, game) => game.fireRate > 180
     },
     {
         id: 'speed',
@@ -42,7 +43,7 @@ export const powerUps = [
         name: 'Dano',
         desc: 'Tiros mais fortes',
         weight: 10,
-        condition: () => true
+        condition: (player) => player.damage < 10
     },
     {
         id: 'shield',
@@ -63,13 +64,13 @@ export const powerUps = [
         name: 'Tiro Duplo',
         desc: 'Dispara 2 projéteis',
         weight: 5,
-        condition: (player) => !player.hasDoubleShot 
+        condition: (player) => !player.hasDoubleShot && !player.hasSpreadShot
     },
     {
         id: 'spreadShot',
         name: 'Tiro Espalhado',
         desc: 'Dispara em arco',
         weight: 4,
-        condition: (player) => player.hasDoubleShot && !player.hasSpreadShot 
+        condition: (player) => !player.hasSpreadShot && player.hasDoubleShot
     }
 ];

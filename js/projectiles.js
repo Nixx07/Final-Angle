@@ -1,5 +1,6 @@
 import { canvas } from './config.js';
 import { player, game, projectiles } from './state.js';
+import { damagePlayer } from './enemies.js';
 import { getBulletColor } from './player.js';
 
 /**
@@ -21,6 +22,7 @@ export function createBullet(angleOffset = 0, sideOffset = 0) {
         damage: player.damage,
         color: getBulletColor(),
         pierceCount: player.pierceCount || 1,
+        enemyBullet: false,
         trail: []
     };
 
@@ -60,6 +62,17 @@ export function updateProjectiles() {
 
         projectile.x += projectile.vx;
         projectile.y += projectile.vy;
+
+        if (projectile.enemyBullet) {
+            const distanceToPlayer = Math.hypot(projectile.x - player.x, projectile.y - player.y);
+            const hitRadius = (projectile.radius || 6) + player.radius;
+
+            if (distanceToPlayer < hitRadius) {
+                damagePlayer(projectile.damage || 0.5);
+                projectiles.splice(i, 1);
+                continue;
+            }
+        }
 
         const isOutOfBounds =
             projectile.x < -100 ||
