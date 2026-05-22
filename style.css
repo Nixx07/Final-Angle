@@ -1,135 +1,196 @@
+/* Reset e configurações base */
 body {
     margin: 0;
     padding: 0;
-    background-color: #1a1a1a;
+    background-color: #121212;
+    height: 100vh;
     overflow: hidden;
-    font-family: Arial, sans-serif;
-    color: #ffffff;
+    font-family: 'Inter', sans-serif;
+    color: #e0e0e0;
 }
 
 canvas {
     display: block;
-    background-color: #2d2d2d;
+    background-color: #1a1a1a;
     cursor: crosshair;
 }
 
+/* Container principal do menu */
 .menu-overlay {
     position: fixed;
     inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(8, 8, 12, 0.92);
+    background: rgba(0, 0, 0, 0.85);
     z-index: 10;
 }
 
+/* Cartão do Menu Minimalista */
 .menu-card {
-    width: min(520px, 92%);
-    padding: 32px;
-    background: rgba(24, 28, 36, 0.98);
-    border: 1px solid rgba(0, 229, 255, 0.35);
-    border-radius: 20px;
+    width: min(480px, 90%);
+    padding: 48px 40px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 8px; /* Bordas menos arredondadas para visual clean */
     text-align: center;
-    box-shadow: 0 0 60px rgba(0, 229, 255, 0.08);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 .menu-card h1 {
-    margin: 0 0 18px;
-    font-size: 3rem;
-    letter-spacing: 0.12em;
+    margin: 0 0 16px;
+    font-size: 2.8rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #00e5ff;
+    color: #ffffff;
 }
 
 .menu-card p {
     margin: 0;
     font-size: 1rem;
     line-height: 1.6;
-    color: #cfdcff;
+    color: #999999;
 }
 
+/* Área dos Botões */
 .menu-buttons {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 14px;
-    margin-top: 28px;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 32px;
 }
 
-.menu-card button {
-    min-width: 150px;
-    padding: 14px 20px;
-    border: none;
-    border-radius: 999px;
-    background: #00e5ff;
-    color: #0f172a;
-    font-size: 1rem;
-    font-weight: 700;
+@media (min-width: 480px) {
+    .menu-buttons {
+        flex-direction: row;
+        justify-content: center;
+    }
+}
+
+/* Estilo unificado para botões e links */
+.btn {
+    display: inline-block;
+    padding: 14px 28px;
+    border-radius: 4px; /* Mais reto */
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
     cursor: pointer;
-    transition: transform 0.15s ease, background 0.15s ease;
+    transition: all 0.2s ease;
+    flex: 1;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
 }
 
-.menu-card button:hover {
-    transform: translateY(-2px);
-    background: #5dffff;
+/* Botão de destaque em alto contraste (Branco e Preto) */
+.btn.primary {
+    background: #ffffff;
+    color: #000000;
+    border: 1px solid #ffffff;
+}
+
+.btn.primary:hover {
+    background: #e0e0e0;
+    border-color: #e0e0e0;
+}
+
+/* Botão secundário discreto (Cinza) */
+.btn.secondary {
+    background: transparent;
+    color: #ffffff;
+    border: 1px solid #555555;
+}
+
+.btn.secondary:hover {
+    border-color: #ffffff;
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .menu-hint {
-    margin-top: 18px;
-    font-size: 0.95rem;
-    color: #9ae6ff;
+    margin-top: 28px !important;
+    font-size: 0.85rem !important;
+    color: #666666 !important;
 }
 
-.modal.hidden {
-    display: none;
+.menu-hint strong {
+    color: #ffffff;
 }
 
+/* Modal e Transições */
 .modal {
     position: fixed;
     inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.75);
+    background: rgba(0, 0, 0, 0.9);
     z-index: 20;
     padding: 20px;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.modal.hidden {
+    opacity: 0;
+    visibility: hidden;
 }
 
 .modal-content {
-    width: min(560px, 100%);
-    padding: 28px;
-    background: #171b23;
-    border-radius: 18px;
-    border: 1px solid rgba(0, 229, 255, 0.35);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+    width: min(450px, 100%);
+    padding: 40px;
+    background: #1a1a1a;
+    border-radius: 8px;
+    border: 1px solid #333;
+    transform: scale(1);
+    transition: transform 0.2s ease;
+}
+
+.modal.hidden .modal-content {
+    transform: scale(0.95);
 }
 
 .modal-content h2 {
     margin-top: 0;
-    color: #00e5ff;
-    font-size: 1.8rem;
+    margin-bottom: 24px;
+    color: #ffffff;
+    font-size: 1.5rem;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
+/* Lista do tutorial minimalista */
 .modal-content ul {
-    margin: 20px 0 0;
-    padding-left: 20px;
-    text-align: left;
-    color: #dbeafe;
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
 
 .modal-content li {
-    margin-bottom: 12px;
-    line-height: 1.55;
+    margin-bottom: 8px;
+    padding: 14px 16px;
+    background: #141414;
+    border-radius: 4px;
+    color: #cccccc;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    border: 1px solid #222;
 }
 
-.modal-content button {
+.modal-content li strong {
+    color: #ffffff;
+    min-width: 100px;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.modal-content .btn {
     width: 100%;
-    margin-top: 22px;
-    padding: 14px 0;
-    border: none;
-    border-radius: 14px;
-    background: #00e5ff;
-    color: #0f172a;
-    font-weight: 700;
-    cursor: pointer;
+    margin-top: 24px;
 }

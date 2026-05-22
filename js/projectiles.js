@@ -64,6 +64,10 @@ export function updateProjectiles() {
         projectile.y += projectile.vy;
 
         if (projectile.enemyBullet) {
+            if (game.isDashing) {
+                continue;
+            }
+
             const distanceToPlayer = Math.hypot(projectile.x - player.x, projectile.y - player.y);
             const hitRadius = (projectile.radius || 6) + player.radius;
 
