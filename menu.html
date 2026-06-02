@@ -3,59 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Final Angle - Menu</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <title>Final Angle</title>
+    <link rel="stylesheet" href="css/menu.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&family=Oswald:wght@200..700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="menu-overlay">
-        <div class="menu-card">
-            <h1>Final Angle</h1>
-            <p>Jogo de tiro com upgrades rápidos e chefes desafiadores. Clique em jogar para começar ou leia o tutorial para aprender os controles.</p>
-            
-            <div class="menu-buttons">
-                <a href="index.html" class="btn primary">Começar Jogo</a>
-                <button id="tutorialBtn" class="btn secondary">Tutorial</button>
+
+    <header>
+        <h1>Final Angle</h1>
+        <a href="https://github.com/Nixx07" target="_blank" class="github">GitHub</a>
+    </header>
+
+    <main>
+
+        <div class="buttons">
+            <form action="index.html">
+                <button class="button">Começar</button>
+            </form>
+            <button id="tutorial" class="button">Tutorial</button>
+        </div>
+
+        <div class="modal-container" id="modalTutorial">
+            <div class="modal-tutorial">
+                <button class="btn-fechar" id="fecharTutorial">&times;</button>
+                <h2>Tutorial</h2>
+                <p>Clique esquerdo: Disparo</p>
+                <p>Espaço: Dash (Adicionado apenas na luta contra o boss final de lvl 20)</p>
+                <p class="obs-tutorial">Dash e Disparo são direcionados pelo cursor do mouse</p>
             </div>
-            
-            <p class="menu-hint">No jogo, pressione <strong>W</strong> para ir direto ao nível 20 com upgrades de teste.</p>
         </div>
-    </div>
 
-    <div id="tutorialModal" class="modal hidden">
-        <div class="modal-content">
-            <h2>Controles do Jogo</h2>
-            <ul>
-                <li><strong>Mouse</strong> mira em tempo real</li>
-                <li><strong>Clique Esq.</strong> dispara a arma</li>
-                <li><strong>Espaço</strong> usa o dash</li>
-                <li><strong>Tecla W</strong> atalho para o nível 20</li>
-            </ul>
-            <button id="closeTutorialBtn" class="btn primary">Entendi</button>
+        <div class="analise">
+            <h3>Análise do BRKsEDU. Veja:</h3>
+            <button class="buttonPlay" id="PlayVideo">Play</button>
         </div>
-    </div>
 
-    <script>
-        const tutorialBtn = document.getElementById('tutorialBtn');
-        const modal = document.getElementById('tutorialModal');
-        const closeBtn = document.getElementById('closeTutorialBtn');
+        <div id="videoModal" class="modal-video oculto">
+            <div class="conteudo-modal">
+                <button id="btnFecharVideo" class="btn-fechar-video">&times;</button>
+                
+                <video src="video/Olha essa geometria.mp4" controls width="100%"></video>
+            </div>
+        </div>
 
-        // Abrir modal
-        tutorialBtn.addEventListener('click', () => {
-            modal.classList.remove('hidden');
-        });
+    </main>
 
-        // Fechar modal pelo botão
-        closeBtn.addEventListener('click', () => {
-            modal.classList.add('hidden');
-        });
-
-        // Fechar modal clicando fora dele
-        modal.addEventListener('click', (event) => {
-            if (event.target === modal) {
-                modal.classList.add('hidden');
-            }
-        });
-    </script>
+    <script src="js/modal-tutorial.js"></script>
+    <script src="js/video.js"></script>
 </body>
 </html>

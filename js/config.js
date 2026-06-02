@@ -6,7 +6,8 @@ export const GAME_STATES = {
     PLAYING: 'playing',
     LEVELING: 'leveling',
     BOSS_ENTERING: 'bossEntering',
-    GAME_OVER: 'gameOver'
+    GAME_OVER: 'gameOver',
+    VICTORY: 'victory'
 };
 
 export const powerUps = [

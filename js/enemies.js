@@ -1,7 +1,10 @@
 import { canvas, GAME_STATES } from './config.js';
-import { player, game, enemies, projectiles, damageNumbers, pickups } from './state.js';
+import { player, game, enemies, projectiles, damageNumbers, pickups, particles } from './state.js'; 
 import { createEnemyParticles } from './particles.js';
 import { startLevelUp, applyRandomFreeUpgrade } from './upgrades.js';
+import { showVictoryModal } from './victory.js';
+
+const FRAME_DURATION = 1000 / 60;
 
 // =========================
 // Inimigos base
@@ -14,8 +17,8 @@ function createBaseEnemy() {
         hp: 1,
         xp: 24,
         color: '#ff80ab',
-        speedMin: 1.2,
-        speedMax: 2.2,
+        speedMin: 2.0,
+        speedMax: 3.0,
         damage: 1,
         hitFlash: 0
     };
@@ -34,8 +37,8 @@ function createEnemyByLevel() {
                 hp: 2,
                 xp: 40,
                 color: '#f44336',
-                speedMin: 1.5,
-                speedMax: 2.4,
+                speedMin: 2.3,
+                speedMax: 3.2,
                 damage: 1
             };
         } else if (roll < 0.8) {
@@ -45,8 +48,8 @@ function createEnemyByLevel() {
                 hp: 3,
                 xp: 95,
                 color: '#0d47a1',
-                speedMin: 1.2,
-                speedMax: 2.2,
+                speedMin: 2.0,
+                speedMax: 3.0,
                 damage: 2
             };
         } else {
@@ -56,8 +59,8 @@ function createEnemyByLevel() {
                 hp: 3,
                 xp: 65,
                 color: '#4caf50',
-                speedMin: 2.4,
-                speedMax: 3.2,
+                speedMin: 3.2,
+                speedMax: 4.0,
                 damage: 1
             };
         }
@@ -71,8 +74,8 @@ function createEnemyByLevel() {
                 hp: 2,
                 xp: 40,
                 color: '#f44336',
-                speedMin: 1.5,
-                speedMax: 2.4,
+                speedMin: 2.3,
+                speedMax: 3.2,
                 damage: 1
             };
         } else if (roll < 0.9) {
@@ -82,8 +85,8 @@ function createEnemyByLevel() {
                 hp: 3,
                 xp: 95,
                 color: '#0d47a1',
-                speedMin: 1.2,
-                speedMax: 2.2,
+                speedMin: 2.0,
+                speedMax: 3.0,
                 damage: 2
             };
         } else {
@@ -108,8 +111,8 @@ function createEnemyByLevel() {
                 hp: 3,
                 xp: 65,
                 color: '#4caf50',
-                speedMin: 2.4,
-                speedMax: 3.2,
+                speedMin: 3.2,
+                speedMax: 4.0,
                 damage: 1
             };
         } else if (roll < 0.65) {
@@ -119,8 +122,8 @@ function createEnemyByLevel() {
                 hp: 2,
                 xp: 40,
                 color: '#f44336',
-                speedMin: 1.5,
-                speedMax: 2.4,
+                speedMin: 2.3,
+                speedMax: 3.2,
                 damage: 1
             };
         } else {
@@ -133,8 +136,8 @@ function createEnemyByLevel() {
             hp: 2,
             xp: 40,
             color: '#f44336',
-            speedMin: 1.5,
-            speedMax: 2.4,
+            speedMin: 2.3,
+            speedMax: 3.2,
             damage: 1
         };
     } else {
@@ -165,9 +168,9 @@ function createSwarmEnemy() {
 function startSwarmEvent() {
     game.swarmActive = true;
     game.swarmPendingCount = player.level <= 5 ? 55 : (player.level <= 12 ? 85 : 110);
-    game.swarmFlashTimer = 45;
-    game.swarmMessageTimer = 110;
-    game.swarmCooldown = 1100;
+    game.swarmFlashTimer = 45 * FRAME_DURATION;
+    game.swarmMessageTimer = 110 * FRAME_DURATION;
+    game.swarmCooldown = 1100 * FRAME_DURATION;
     game.screenShake = Math.max(game.screenShake, 10);
 }
 
@@ -186,7 +189,7 @@ function spawnSwarmEnemy() {
     }
 
     const angle = Math.atan2(player.y - y, player.x - x);
-    const speed = 0.8 + Math.random() * 0.4;
+    const speed = 1.2 + Math.random() * 0.8;
 
     enemies.push({
         ...enemyData,
@@ -219,8 +222,8 @@ function createEliteEnemy(baseEnemy) {
         elite: true,
         glow: 0,
         hitFlash: 0,
-        baseSpeed: (baseEnemy.speedMin || 1.2) + 0.5,
-        maxSpeed: 3.5
+        baseSpeed: (baseEnemy.speedMin || 1.2) + 1.2,
+        maxSpeed: 4.0
     };
 }
 
@@ -298,13 +301,13 @@ function createBoss() {
         pulse: 0,
         driftAngle: 0,
         hitFlash: 0,
-        summonCooldown: 120
+        summonCooldown: 120 * FRAME_DURATION
     };
 }
 
 function createBossMinion(x, y) {
     const angleToPlayer = Math.atan2(player.y - y, player.x - x);
-    const startSpeed = 1.35;
+    const startSpeed = 2.2;
 
     return {
         type: 'octagon',
@@ -345,10 +348,11 @@ function spawnBoss() {
 function spawnLevel20Boss() {
     const boss = {
         type: 'voidWeaver',
+        isLevel20Boss: true,
         x: canvas.width / 2,
         y: -120,
-        hp: 1500,
-        maxHp: 1500,
+        hp: 1200,
+        maxHp: 1200,
         xp: 20000,
         radius: 72,
         phase: 'entering',
@@ -363,18 +367,43 @@ function spawnLevel20Boss() {
 
     enemies.push(boss);
     game.boss2Active = true;
+    game.dashHintTimer = 240 * FRAME_DURATION;
     game.bossIntroStart = performance.now();
     game.screenShake = 24;
 }
 
-function updateVoidWeaver(boss) {
-    boss.attackTimer++;
-    boss.orbitPhase += 0.04;
-    boss.driftAngle += 0.01;
-    boss.pulse = (boss.pulse || 0) + 0.05;
+// CORREÇÃO: Alterado de 4 segundos para 2 segundos conforme seu pedido (2000ms)
+function triggerFinalBossVictory() {
+    if (game.state === GAME_STATES.VICTORY) return;
+
+    game.boss2Active = false;
+    game.bossSpawned = false;
+    game.bossDefeated = true;
+    game.state = GAME_STATES.VICTORY;
+    game.isShooting = false;
+    game.isDashing = false;
+    game.dashHintTimer = 0;
+    game.dashCooldown = 0;
+    projectiles.length = 0;
+    particles.length = 0;
+    pickups.length = 0;
+    damageNumbers.length = 0;
+    enemies.length = 0;
+    game.screenShake = 35;
+    player.hp = player.maxHp;
+}
+
+function updateVoidWeaver(boss, delta) {
+    const timeScale = delta / FRAME_DURATION;
+    const previousAttackTimer = boss.attackTimer;
+    boss.attackTimer += delta;
+
+    boss.orbitPhase += 0.04 * timeScale;
+    boss.driftAngle += 0.01 * timeScale;
+    boss.pulse = (boss.pulse || 0) + 0.05 * timeScale;
 
     if (boss.phase === 'entering') {
-        boss.y += 2;
+        boss.y += 3 * timeScale;
 
         if (boss.y >= 160) {
             boss.y = 160;
@@ -385,19 +414,22 @@ function updateVoidWeaver(boss) {
         return;
     }
 
-    boss.x += Math.sin(boss.driftAngle) * 1.8;
-    boss.y += Math.sin(boss.driftAngle * 0.8) * 0.9;
+    boss.x += Math.sin(boss.driftAngle) * 2.2 * timeScale;
+    boss.y += Math.sin(boss.driftAngle * 0.8) * 1.1 * timeScale;
 
     if (boss.phase === 'attack1') {
-        if (boss.attackTimer % 90 === 0) {
+        const ringTime = 90 * FRAME_DURATION;
+        const burstTime = 180 * FRAME_DURATION;
+
+        if (previousAttackTimer < ringTime && boss.attackTimer >= ringTime) {
             spawnBulletRing(boss.x, boss.y, 4, 3, '#18ffff');
         }
 
-        if (boss.attackTimer % 180 === 0) {
+        if (previousAttackTimer < burstTime && boss.attackTimer >= burstTime) {
             spawnVoidBurst(boss);
         }
 
-        if (boss.attackTimer > 300) {
+        if (boss.attackTimer > 300 * FRAME_DURATION) {
             boss.phase = 'attack2';
             boss.attackTimer = 0;
         }
@@ -408,18 +440,25 @@ function updateVoidWeaver(boss) {
     }
 
     if (boss.phase === 'attack2') {
-        if (boss.attackTimer === 1) {
+        if (previousAttackTimer <= 0 && boss.attackTimer > 0) {
             boss.targetAngle = Math.atan2(player.y - boss.y, player.x - boss.x);
         }
 
-        if (boss.attackTimer < 35) {
-            boss.x += Math.cos(boss.targetAngle) * 4;
-            boss.y += Math.sin(boss.targetAngle) * 3;
-        } else if (boss.attackTimer % 30 === 0) {
-            spawnTargetedVolley(boss, 2, 3.5);
+        if (boss.attackTimer < 35 * FRAME_DURATION) {
+            boss.x += Math.cos(boss.targetAngle) * 4 * timeScale;
+            boss.y += Math.sin(boss.targetAngle) * 3 * timeScale;
+        } else {
+            const volleyStart = 35 * FRAME_DURATION;
+            const volleyInterval = 30 * FRAME_DURATION;
+            const previousIndex = Math.floor(Math.max(0, previousAttackTimer - volleyStart) / volleyInterval);
+            const currentIndex = Math.floor(Math.max(0, boss.attackTimer - volleyStart) / volleyInterval);
+
+            if (currentIndex > previousIndex) {
+                spawnTargetedVolley(boss, 2, 5.0);
+            }
         }
 
-        if (boss.attackTimer > 100) {
+        if (boss.attackTimer > 100 * FRAME_DURATION) {
             boss.phase = 'attack1';
             boss.attackTimer = 0;
         }
@@ -438,8 +477,8 @@ function spawnVoidBurst(boss) {
         projectiles.push({
             x: boss.x + Math.cos(angle) * 40,
             y: boss.y + Math.sin(angle) * 40,
-            vx: Math.cos(angle) * 4,
-            vy: Math.sin(angle) * 4,
+            vx: Math.cos(angle) * 5.4,
+            vy: Math.sin(angle) * 5.4,
             enemyBullet: true,
             damage: 0.5,
             color: '#64ffda',
@@ -491,10 +530,9 @@ export function spawnEnemy() {
     if ((game.bossSpawned && !game.bossDefeated) || game.boss2Active) return;
 
     if (game.swarmCooldown > 0) {
-        game.swarmCooldown--;
+        game.swarmCooldown = Math.max(0, game.swarmCooldown - 600);
     }
 
-    // Boss 2 tem prioridade total no nível 20
     if (player.level >= 20 && !game.boss2Active) {
         spawnLevel20Boss();
         game.boss2Active = true;
@@ -529,7 +567,7 @@ export function spawnEnemy() {
 
     if (maybeSpawnElite()) return;
 
-    if (player.level >= 10 && !game.bossSpawned) {
+    if (player.level >= 10 && !game.bossSpawned && !game.bossDefeated) {
         spawnBoss();
         return;
     }
@@ -564,12 +602,14 @@ export function spawnEnemy() {
 // Pickups
 // =========================
 
-export function updatePickups() {
+export function updatePickups(delta) {
+    const timeScale = delta / FRAME_DURATION;
+
     for (let i = pickups.length - 1; i >= 0; i--) {
         const pickup = pickups[i];
 
-        pickup.pulse += 0.05;
-        pickup.life--;
+        pickup.pulse += 0.05 * timeScale;
+        pickup.life = Math.max(0, pickup.life - delta);
 
         const dx = player.x - pickup.x;
         const dy = player.y - pickup.y;
@@ -577,8 +617,8 @@ export function updatePickups() {
 
         if (distance > 0) {
             const speed = pickup.speed || 3;
-            pickup.x += (dx / distance) * speed;
-            pickup.y += (dy / distance) * speed;
+            pickup.x += (dx / distance) * speed * timeScale;
+            pickup.y += (dy / distance) * speed * timeScale;
         }
 
         if (distance < 45) {
@@ -608,12 +648,12 @@ export function damagePlayer(amount) {
     if (player.shield > 0) {
         player.shield--;
         game.screenShake = 15;
-        player.invincibleTimer = 120;
+        player.invincibleTimer = 120 * FRAME_DURATION;
         return;
     }
 
     player.hp -= amount;
-    player.invincibleTimer = 120;
+    player.invincibleTimer = 120 * FRAME_DURATION;
     game.screenShake = 20;
 
     if (player.hp <= 0) {
@@ -625,30 +665,36 @@ export function damagePlayer(amount) {
 // Atualização dos inimigos
 // =========================
 
-export function updateEnemies() {
-    updatePickups();
+export function updateEnemies(delta) {
+    updatePickups(delta);
 
-    if (game.swarmFlashTimer > 0) game.swarmFlashTimer--;
-    if (game.swarmMessageTimer > 0) game.swarmMessageTimer--;
+    const timeScale = delta / FRAME_DURATION;
+
+    if (game.swarmFlashTimer > 0) {
+        game.swarmFlashTimer = Math.max(0, game.swarmFlashTimer - delta);
+    }
+    if (game.swarmMessageTimer > 0) {
+        game.swarmMessageTimer = Math.max(0, game.swarmMessageTimer - delta);
+    }
 
     for (let i = enemies.length - 1; i >= 0; i--) {
         const enemy = enemies[i];
 
         if (enemy.hitFlash > 0) {
-            enemy.hitFlash--;
+            enemy.hitFlash = Math.max(0, enemy.hitFlash - delta);
         }
 
         if (enemy.type === 'voidWeaver') {
-            updateVoidWeaver(enemy);
+            updateVoidWeaver(enemy, delta);
         } else if (enemy.type === 'boss') {
-            updateBoss(enemy);
+            updateBoss(enemy, delta);
         } else if (enemy.type === 'octagon') {
-            updateBossMinion(enemy);
+            updateBossMinion(enemy, delta);
         } else if (enemy.elite) {
-            updateElite(enemy);
+            updateElite(enemy, delta);
         } else {
-            enemy.x += enemy.vx;
-            enemy.y += enemy.vy;
+            enemy.x += enemy.vx * timeScale;
+            enemy.y += enemy.vy * timeScale;
             enemy.angle = Math.atan2(player.y - enemy.y, player.x - enemy.x);
         }
 
@@ -664,22 +710,18 @@ export function updateEnemies() {
             if (game.isDashing) {
                 if (enemy.type !== 'boss' && enemy.type !== 'voidWeaver') {
                     enemy.hp -= 10;
-                    enemy.hitFlash = 6;
-                    game.screenShake = Math.max(game.screenShake, 6);
+                    enemy.hitFlash = 100;
+                    player.currentXp += enemy.xp;
+                    createEnemyParticles(enemy);
 
-                    if (enemy.hp <= 0) {
-                        player.currentXp += enemy.xp;
-                        createEnemyParticles(enemy);
+                    if (enemy.elite) {
+                        dropEliteReward(enemy);
+                    }
 
-                        if (enemy.elite) {
-                            dropEliteReward(enemy);
-                        }
+                    enemies.splice(i, 1);
 
-                        enemies.splice(i, 1);
-
-                        if (player.currentXp >= player.nextLevelXp) {
-                            startLevelUp();
-                        }
+                    if (player.currentXp >= player.nextLevelXp) {
+                        startLevelUp();
                     }
                 }
 
@@ -711,7 +753,7 @@ export function updateEnemies() {
                 const isBossEnemy = enemy.type === 'boss' || enemy.type === 'voidWeaver';
 
                 if (!isBossEnemy) {
-                    enemy.hitFlash = 5;
+                    enemy.hitFlash = 100;
                     game.screenShake = Math.max(game.screenShake, enemy.elite ? 5 : 3);
                 }
 
@@ -719,7 +761,7 @@ export function updateEnemies() {
                     if (enemy.lastDamageNumber && enemy.lastDamageNumber.life > 0) {
                         enemy.lastDamageNumber.val += damageValue;
                         enemy.lastDamageNumber.alpha = 1;
-                        enemy.lastDamageNumber.life = 25;
+                        enemy.lastDamageNumber.life = 25 * FRAME_DURATION;
                         enemy.lastDamageNumber.x = enemy.x;
                         enemy.lastDamageNumber.y = enemy.y;
                     } else {
@@ -728,7 +770,7 @@ export function updateEnemies() {
                             y: enemy.y,
                             val: damageValue,
                             alpha: 1,
-                            life: 25
+                            life: 25 * FRAME_DURATION
                         };
                         damageNumbers.push(damageNumber);
                         enemy.lastDamageNumber = damageNumber;
@@ -739,7 +781,7 @@ export function updateEnemies() {
                         y: enemy.y,
                         val: damageValue,
                         alpha: 1,
-                        life: enemy.elite ? 50 : 40
+                        life: enemy.elite ? 50 * FRAME_DURATION : 40 * FRAME_DURATION
                     });
                 }
 
@@ -757,28 +799,37 @@ export function updateEnemies() {
                 }
 
                 if (enemy.hp <= 0) {
-                    player.currentXp += enemy.xp || 0;
                     createEnemyParticles(enemy);
+
+                    if (enemy.type === 'boss' || (enemy.type === 'voidWeaver' && !enemy.isLevel20Boss)) {
+                        game.bossSpawned = false;
+                        game.bossDefeated = true;
+                        applyRandomFreeUpgrade();
+                        applyRandomFreeUpgrade();
+                        startLevelUp();
+                    } else if (enemy.type === 'voidWeaver' && enemy.isLevel20Boss) {
+                        // CORREÇÃO: Limpa o jogo para evitar bugs de física com o jogo parado
+                        enemies.length = 0;
+                        projectiles.length = 0;
+                        
+                        game.state = GAME_STATES.VICTORY;
+                        game.bossDefeated = true;
+                        
+                        // Mostra a tela de vitória do HTML
+                        showVictoryModal();
+                        return;
+                    }
+
+                    // Resto do código de ganho de XP e remoção do inimigo convencional
+                    player.currentXp += enemy.xp || 0;
 
                     if (enemy.elite) {
                         dropEliteReward(enemy);
                     }
 
-                    if (enemy.type === 'boss') {
-                        game.bossDefeated = true;
-                        game.screenShake = 30;
-                        player.hp = player.maxHp;
-                    }
-
-                    if (enemy.type === 'voidWeaver') {
-                        game.boss2Active = false;
-                        game.screenShake = 35;
-                        player.hp = player.maxHp;
-                    }
-
                     enemies.splice(i, 1);
 
-                    if (player.currentXp >= player.nextLevelXp) {
+                    if (player.currentXp >= player.nextLevelXp && game.state !== GAME_STATES.VICTORY) {
                         startLevelUp();
                     }
 
@@ -787,15 +838,22 @@ export function updateEnemies() {
             }
         }
     }
-}
+
+    const finalBossAlive = enemies.some((enemy) => enemy.type === 'voidWeaver');
+    if (!finalBossAlive && game.boss2Active && game.state !== GAME_STATES.VICTORY) {
+        triggerFinalBossVictory();
+    }
+} // CORREÇÃO: Chave fechada corretamente aqui!
 
 // =========================
 // Comportamentos específicos
 // =========================
 
-function updateBoss(boss) {
+function updateBoss(boss, delta) {
+    const timeScale = delta / FRAME_DURATION;
+
     if (boss.phase === 'entering') {
-        boss.y += 1.5;
+        boss.y += 1.5 * timeScale;
 
         if (boss.y >= boss.targetY) {
             boss.y = boss.targetY;
@@ -805,36 +863,38 @@ function updateBoss(boss) {
         return;
     }
 
-    boss.pulse += 0.05;
-    boss.driftAngle += 0.01;
-    boss.x += Math.sin(boss.driftAngle) * 1.2;
+    boss.pulse += 0.05 * timeScale;
+    boss.driftAngle += 0.01 * timeScale;
+    boss.x += Math.sin(boss.driftAngle) * 1.2 * timeScale;
 
     const dx = player.x - boss.x;
     const dy = player.y - boss.y;
 
     boss.angle = Math.atan2(dy, dx);
-    boss.x += Math.cos(boss.angle) * 0.35;
-    boss.y += Math.sin(boss.angle) * 0.2;
+    boss.x += Math.cos(boss.angle) * 0.35 * timeScale;
+    boss.y += Math.sin(boss.angle) * 0.2 * timeScale;
 
-    boss.summonCooldown--;
+    boss.summonCooldown = Math.max(0, boss.summonCooldown - delta);
 
     if (boss.summonCooldown <= 0) {
         spawnBossMinions(boss);
-        boss.summonCooldown = 150;
+        boss.summonCooldown = 150 * FRAME_DURATION;
     }
 }
 
-function updateBossMinion(minion) {
-    minion.x += minion.vx;
-    minion.y += minion.vy;
+function updateBossMinion(minion, delta) {
+    const timeScale = delta / FRAME_DURATION;
+
+    minion.x += minion.vx * timeScale;
+    minion.y += minion.vy * timeScale;
 
     const angle = Math.atan2(player.y - minion.y, player.x - minion.x);
     minion.angle = angle;
 
-    minion.vx += Math.cos(angle) * 0.035;
-    minion.vy += Math.sin(angle) * 0.035;
+    minion.vx += Math.cos(angle) * 0.035 * timeScale;
+    minion.vy += Math.sin(angle) * 0.035 * timeScale;
 
-    const maxSpeed = 1.9;
+    const maxSpeed = 2.4;
     const speed = Math.hypot(minion.vx, minion.vy);
 
     if (speed > maxSpeed) {
@@ -843,14 +903,16 @@ function updateBossMinion(minion) {
     }
 }
 
-function updateElite(enemy) {
-    enemy.glow += 0.12;
+function updateElite(enemy, delta) {
+    const timeScale = delta / FRAME_DURATION;
+
+    enemy.glow += 0.12 * timeScale;
 
     const angle = Math.atan2(player.y - enemy.y, player.x - enemy.x);
     const acceleration = 0.06;
 
-    enemy.vx += Math.cos(angle) * acceleration;
-    enemy.vy += Math.sin(angle) * acceleration;
+    enemy.vx += Math.cos(angle) * acceleration * timeScale;
+    enemy.vy += Math.sin(angle) * acceleration * timeScale;
 
     const currentSpeed = Math.hypot(enemy.vx, enemy.vy);
 
@@ -859,7 +921,7 @@ function updateElite(enemy) {
         enemy.vy = (enemy.vy / currentSpeed) * enemy.maxSpeed;
     }
 
-    enemy.x += enemy.vx;
-    enemy.y += enemy.vy;
+    enemy.x += enemy.vx * timeScale;
+    enemy.y += enemy.vy * timeScale;
     enemy.angle = angle;
 }

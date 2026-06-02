@@ -13,20 +13,23 @@ export function updatePlayerAngle(mouseX, mouseY) {
     player.angle = Math.atan2(mouseY - player.y, mouseX - player.x);
 }
 
-export function updatePlayerDash() {
+const FRAME_DURATION = 1000 / 60;
+
+export function updatePlayerDash(delta) {
     if (game.dashCooldown > 0) {
-        game.dashCooldown = Math.max(0, game.dashCooldown - 1);
+        game.dashCooldown = Math.max(0, game.dashCooldown - delta);
     }
 
     if (player.invincibleTimer > 0) {
-        player.invincibleTimer = Math.max(0, player.invincibleTimer - 1);
+        player.invincibleTimer = Math.max(0, player.invincibleTimer - delta);
     }
 
     if (!game.isDashing || player.dashTimer <= 0) return;
 
-    player.x += Math.cos(player.dashDirection) * player.dashSpeed;
-    player.y += Math.sin(player.dashDirection) * player.dashSpeed;
-    player.dashTimer--;
+    const timeScale = delta / FRAME_DURATION;
+    player.x += Math.cos(player.dashDirection) * player.dashSpeed * timeScale;
+    player.y += Math.sin(player.dashDirection) * player.dashSpeed * timeScale;
+    player.dashTimer = Math.max(0, player.dashTimer - delta);
 
     if (player.dashTimer <= 0) {
         game.isDashing = false;

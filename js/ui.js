@@ -2,7 +2,9 @@ import { ctx, canvas, GAME_STATES } from './config.js';
 import { player, game, enemies, projectiles, particles, damageNumbers, pickups } from './state.js';
 import { upgradeIcons } from './icons.js';
 
-function drawDamageNumbers() {
+function drawDamageNumbers(delta) {
+    const timeScale = delta / (1000 / 60);
+
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 20px Arial';
     ctx.textAlign = 'center';
@@ -13,9 +15,9 @@ function drawDamageNumbers() {
         ctx.globalAlpha = d.alpha;
         ctx.fillText(`-${d.val}`, d.x, d.y);
 
-        d.y -= 1;
-        d.alpha -= 0.02;
-        d.life--;
+        d.y -= 1 * timeScale;
+        d.alpha -= 0.02 * timeScale;
+        d.life = Math.max(0, d.life - delta);
 
         if (d.life <= 0) {
             damageNumbers.splice(i, 1);
@@ -395,7 +397,7 @@ function drawPlayer() {
     ctx.save();
 
     if (player.invincibleTimer > 0) {
-        const blink = Math.floor(player.invincibleTimer / 6) % 2 === 0;
+        const blink = Math.floor(performance.now() / 80) % 2 === 0;
         ctx.globalAlpha = blink ? 1 : 0.25;
     }
 
@@ -423,7 +425,8 @@ function drawPlayer() {
     ctx.fillRect(player.x - 20, player.y + 30, 40, 5);
 
     ctx.fillStyle = game.dashCooldown <= 0 ? '#00e5ff' : '#555';
-    const dashProgress = Math.max(0, (45 - (game.dashCooldown || 0)) / 45);
+    const dashCooldownMax = 45 * (1000 / 60);
+    const dashProgress = Math.max(0, 1 - (game.dashCooldown || 0) / dashCooldownMax);
     ctx.fillRect(player.x - 20, player.y + 30, 40 * dashProgress, 5);
 }
 
@@ -439,6 +442,13 @@ function drawLevelUpMenu() {
     const totalWidth = cardWidth * 3 + spacing * 2;
     const startX = (canvas.width - totalWidth) / 2;
     const startY = (canvas.height - cardHeight) / 2;
+
+    if (game.pendingLevelUps > 1) {
+        ctx.fillStyle = '#00e5ff';
+        ctx.font = 'bold 22px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(`Escolha ${game.pendingLevelUps} upgrades`, canvas.width / 2, startY - 30);
+    }
 
     game.currentUpgradeOptions.forEach((option, index) => {
         const x = startX + index * (cardWidth + spacing);
@@ -504,7 +514,8 @@ function drawBossIntroOverlay() {
 
 function drawSwarmWarning() {
     if (game.swarmFlashTimer > 0) {
-        const alpha = 0.18 + (game.swarmFlashTimer / 45) * 0.22;
+        const fullDuration = 45 * (1000 / 60);
+        const alpha = 0.18 + Math.min(1, game.swarmFlashTimer / fullDuration) * 0.22;
         ctx.fillStyle = `rgba(255, 235, 59, ${alpha})`;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
@@ -534,14 +545,42 @@ function drawGameOver() {
     ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2);
 }
 
+function drawVictory() {
+    if (game.state !== GAME_STATES.VICTORY) return;
+
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = '#ffea00';
+    ctx.font = 'bold 56px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('VITÓRIA!', canvas.width / 2, canvas.height / 2 - 20);
+
+    ctx.font = '24px Arial';
+    ctx.fillStyle = 'white';
+    ctx.fillText('Parabéns, você derrotou o boss de nível 20!', canvas.width / 2, canvas.height / 2 + 30);
+    ctx.fillText('Voltando ao menu...', canvas.width / 2, canvas.height / 2 + 70);
+}
+
+function drawDashHint() {
+    if (game.dashHintTimer <= 0) return;
+
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillRect(canvas.width / 2 - 210, canvas.height - 120, 420, 60);
+
+    ctx.fillStyle = '#00e5ff';
+    ctx.font = 'bold 24px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Dash liberado! Aperte Espaço para usar', canvas.width / 2, canvas.height - 80);
+}
+
 function drawTestHint() {
     ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
     ctx.font = '14px Arial';
     ctx.textAlign = 'right';
-    ctx.fillText('Botão direito: abrir nível de teste', canvas.width - 18, canvas.height - 18);
 }
 
-export function draw() {
+export function draw(delta) {
     const shakeX = game.screenShake > 0 ? (Math.random() - 0.5) * game.screenShake : 0;
     const shakeY = game.screenShake > 0 ? (Math.random() - 0.5) * game.screenShake : 0;
 
@@ -559,7 +598,7 @@ export function draw() {
     drawPickups();
     drawShield();
     drawPlayer();
-    drawDamageNumbers();
+    drawDamageNumbers(delta);
 
     const boss = enemies.find((enemy) => enemy.type === 'voidWeaver' || enemy.type === 'boss');
     if (boss) {
@@ -570,12 +609,15 @@ export function draw() {
 
     drawLevelUpMenu();
     drawBossIntroOverlay();
+    drawDashHint();
     drawSwarmWarning();
     drawGameOver();
+    drawVictory();
     drawTestHint();
 
     if (game.screenShake > 0) {
-        game.screenShake *= 0.9;
+        const decayRate = Math.pow(0.9, delta / (1000 / 60));
+        game.screenShake *= decayRate;
 
         if (game.screenShake < 0.4) {
             game.screenShake = 0;

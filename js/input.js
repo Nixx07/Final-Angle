@@ -17,10 +17,6 @@ export function setupInput() {
                 checkUpgradeClick(event);
             }
         }
-
-        if (event.button === 2) {
-            forceLevelUpForTest();
-        }
     });
 
     window.addEventListener('mouseup', (event) => {
@@ -39,21 +35,24 @@ export function setupInput() {
     });
 
     window.addEventListener('keydown', (e) => {
-        if (e.code === 'Space' && game.dashCooldown <= 0 && game.state === GAME_STATES.PLAYING) {
+        if (
+            e.code === 'Space' &&
+            game.dashCooldown <= 0 &&
+            game.state === GAME_STATES.PLAYING &&
+            game.boss2Active
+        ) {
             performDash();
-        }
-
-        if (e.key.toLowerCase() === 'w' && game.state === GAME_STATES.PLAYING) {
-            prepareBossLevel20Test();
         }
     });
 
+    const FRAME_DURATION = 1000 / 60;
+
     function performDash() {
         game.isDashing = true;
-        game.dashCooldown = 45;
-        player.dashTimer = 14;
+        game.dashCooldown = 45 * FRAME_DURATION;
+        player.dashTimer = 14 * FRAME_DURATION;
         player.dashDirection = player.angle;
-        player.dashSpeed = 20;
+        player.dashSpeed = 28;
         player.radius = 32;
     }
 }

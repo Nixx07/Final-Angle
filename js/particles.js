@@ -16,13 +16,15 @@ export function createEnemyParticles(enemy) {
     }
 }
 
-export function updateParticles() {
+export function updateParticles(delta) {
+    const timeScale = delta / (1000 / 60);
+
     for (let i = particles.length - 1; i >= 0; i--) {
         const particle = particles[i];
 
-        particle.x += particle.vx;
-        particle.y += particle.vy;
-        particle.alpha -= 0.02;
+        particle.x += particle.vx * timeScale;
+        particle.y += particle.vy * timeScale;
+        particle.alpha -= 0.02 * timeScale;
 
         if (particle.alpha <= 0) {
             particles.splice(i, 1);

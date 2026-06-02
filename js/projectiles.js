@@ -50,7 +50,9 @@ export function shoot(timestamp) {
     game.lastShotTime = timestamp;
 }
 
-export function updateProjectiles() {
+export function updateProjectiles(delta) {
+    const timeScale = delta / (1000 / 60);
+
     for (let i = projectiles.length - 1; i >= 0; i--) {
         const projectile = projectiles[i];
 
@@ -60,8 +62,8 @@ export function updateProjectiles() {
         // Mantém um rastro curto para performance e visual
         if (projectile.trail.length > 8) projectile.trail.shift();
 
-        projectile.x += projectile.vx;
-        projectile.y += projectile.vy;
+        projectile.x += projectile.vx * timeScale;
+        projectile.y += projectile.vy * timeScale;
 
         if (projectile.enemyBullet) {
             if (game.isDashing) {

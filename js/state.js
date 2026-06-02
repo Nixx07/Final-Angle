@@ -29,7 +29,7 @@ export const player = {
 export const game = {
     state: GAME_STATES.PLAYING,
     fireRate: 450,
-    projectileSpeed: 5,
+    projectileSpeed: 8,
     isShooting: false,
     lastShotTime: 0,
     currentUpgradeOptions: [],
@@ -39,6 +39,9 @@ export const game = {
     bossDefeated: false,
     bossIntroStart: 0,
     boss2Active: false,
+    pendingLevelUps: 0,
+    dashHintTimer: 0,
+    victoryTimer: 0,
     dashCooldown: 0,
     isDashing: false,
     

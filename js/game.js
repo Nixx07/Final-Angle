@@ -7,19 +7,38 @@ import { draw } from './ui.js';
 import { game } from './state.js';
 import { GAME_STATES } from './config.js';
 
-function update(timestamp) {
-    if (game.state !== GAME_STATES.PLAYING) return;
+const FRAME_DURATION = 1000 / 60;
+let lastTimestamp = 0;
 
-    updatePlayerDash();
-    shoot(timestamp);
-    updateProjectiles();
-    updateEnemies();
-    updateParticles();
+function update(delta, timestamp) {
+    if (game.state === GAME_STATES.PLAYING) {
+        updatePlayerDash(delta);
+
+        if (game.dashHintTimer > 0) {
+            game.dashHintTimer = Math.max(0, game.dashHintTimer - delta);
+        }
+
+        shoot(timestamp);
+        updateProjectiles(delta);
+        updateEnemies(delta);
+        updateParticles(delta);
+        return;
+    }
 }
 
 function gameLoop(timestamp) {
-    update(timestamp);
-    draw();
+    if (!lastTimestamp) {
+        lastTimestamp = timestamp;
+    }
+
+    const delta = Math.min(timestamp - lastTimestamp, FRAME_DURATION * 4);
+    lastTimestamp = timestamp;
+
+    update(delta, timestamp);
+    if (game.state !== GAME_STATES.VICTORY) {
+        draw(delta);
+    }
+
     requestAnimationFrame(gameLoop);
 }
 

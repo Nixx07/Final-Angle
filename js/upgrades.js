@@ -69,19 +69,10 @@ function applyUpgradeEffect(upgradeId) {
     }
 }
 
-export function startLevelUp() {
-    let leveledUp = false;
-    while (player.currentXp >= player.nextLevelXp) {
-        player.currentXp -= player.nextLevelXp;
-        player.level++;
-        player.nextLevelXp = Math.floor(player.nextLevelXp * 1.16) + 40;
-        leveledUp = true;
-    }
-
-    if (!leveledUp && game.state !== GAME_STATES.LEVELING) return;
-
+function openUpgradeMenu() {
     const availableUpgrades = getAvailableUpgrades();
     if (availableUpgrades.length === 0) {
+        game.currentUpgradeOptions = [];
         game.state = GAME_STATES.PLAYING;
         return;
     }
@@ -100,10 +91,37 @@ export function startLevelUp() {
     }
 }
 
+export function startLevelUp() {
+    let levelsGained = 0;
+    while (player.currentXp >= player.nextLevelXp) {
+        player.currentXp -= player.nextLevelXp;
+        player.level++;
+        player.nextLevelXp = Math.floor(player.nextLevelXp * 1.16) + 40;
+        levelsGained++;
+    }
+
+    if (!levelsGained && game.state !== GAME_STATES.LEVELING) return;
+
+    game.pendingLevelUps += levelsGained;
+
+    if (game.pendingLevelUps <= 0) {
+        game.state = GAME_STATES.PLAYING;
+        return;
+    }
+
+    openUpgradeMenu();
+}
+
 export function applyUpgrade(upgradeId) {
     applyUpgradeEffect(upgradeId);
+    game.pendingLevelUps = Math.max(0, game.pendingLevelUps - 1);
     game.currentUpgradeOptions = [];
-    game.state = GAME_STATES.PLAYING;
+
+    if (game.pendingLevelUps > 0) {
+        openUpgradeMenu();
+    } else {
+        game.state = GAME_STATES.PLAYING;
+    }
 }
 
 export function applyRandomFreeUpgrade() {
@@ -164,6 +182,7 @@ export function prepareBossLevel20Test() {
     game.bossSpawned = false;
     game.bossDefeated = false;
     game.boss2Active = false;
+    game.pendingLevelUps = 0;
     game.bossIntroStart = 0;
     game.swarmActive = false;
     game.swarmPendingCount = 0;

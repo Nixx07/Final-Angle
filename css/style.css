@@ -13,6 +13,9 @@ canvas {
     display: block;
     background-color: #1a1a1a;
     cursor: crosshair;
+    top: 0;
+    left: 0;
+    z-index: 1;
 }
 
 /* Container principal do menu */
@@ -193,4 +196,43 @@ canvas {
 .modal-content .btn {
     width: 100%;
     margin-top: 24px;
+}
+
+.modal-video {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8); /* Fundo escuro */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.conteudo-modal {
+  position: relative;
+  width: 90%;
+  max-width: 800px;
+}
+
+.btn-fechar-video {
+    position: absolute;
+    top: -40px;
+    right: 0;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 30px;
+    cursor: pointer;
+}
+
+.oculto {
+    display: none !important;
+}
+
+video{
+    width: 1000px;
+    height: 1000px;
 }

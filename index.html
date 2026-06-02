@@ -4,10 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Final Angle</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/menu.css">
 </head>
 <body>
     <canvas id="gameCanvas"></canvas>
+
+    <div id="victoryModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="victoryTitle">
+        <div class="modal-content">
+            <h2 id="victoryTitle">Vitória!</h2>
+            <p>Parabéns, você derrotou o boss circulo boladão do mal maligno geométrico lindo cheiroso fedido feio!</p>
+            <button id="backToMenuBtn">Voltar</button>
+        </div>
+    </div>
+
     <script type="module" src="./js/game.js"></script>
+    
 </body>
 </html>
