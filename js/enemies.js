@@ -351,8 +351,8 @@ function spawnLevel20Boss() {
         isLevel20Boss: true,
         x: canvas.width / 2,
         y: -120,
-        hp: 1200,
-        maxHp: 1200,
+        hp: 3000,
+        maxHp: 3000,
         xp: 20000,
         radius: 72,
         phase: 'entering',
@@ -422,7 +422,7 @@ function updateVoidWeaver(boss, delta) {
         const burstTime = 180 * FRAME_DURATION;
 
         if (previousAttackTimer < ringTime && boss.attackTimer >= ringTime) {
-            spawnBulletRing(boss.x, boss.y, 4, 3, '#18ffff');
+            spawnBulletRing(boss.x, boss.y, 6, 3, '#18ffff');
         }
 
         if (previousAttackTimer < burstTime && boss.attackTimer >= burstTime) {
@@ -454,7 +454,7 @@ function updateVoidWeaver(boss, delta) {
             const currentIndex = Math.floor(Math.max(0, boss.attackTimer - volleyStart) / volleyInterval);
 
             if (currentIndex > previousIndex) {
-                spawnTargetedVolley(boss, 2, 5.0);
+                spawnTargetedVolley(boss, 6, 5.5);
             }
         }
 
@@ -469,7 +469,7 @@ function updateVoidWeaver(boss, delta) {
 }
 
 function spawnVoidBurst(boss) {
-    const ringCount = 4;
+    const ringCount = 6;
 
     for (let i = 0; i < ringCount; i++) {
         const angle = (Math.PI * 2 / ringCount) * i + boss.orbitPhase;
@@ -480,7 +480,7 @@ function spawnVoidBurst(boss) {
             vx: Math.cos(angle) * 5.4,
             vy: Math.sin(angle) * 5.4,
             enemyBullet: true,
-            damage: 0.5,
+            damage: 2,
             color: '#64ffda',
             radius: 6
         });
@@ -498,7 +498,7 @@ function spawnTargetedVolley(boss, count, speed) {
             vx: Math.cos(angle) * speed,
             vy: Math.sin(angle) * speed,
             enemyBullet: true,
-            damage: 0.5,
+            damage: 2,
             color: '#82fff4',
             radius: 7
         });
@@ -700,7 +700,7 @@ export function updateEnemies(delta) {
 
         const collisionDistance =
             enemy.type === 'boss' || enemy.type === 'voidWeaver'
-                ? enemy.radius + 8
+                ? enemy.radius + 20
                 : enemy.radius + 15;
 
         const touchingPlayer =
@@ -807,6 +807,7 @@ export function updateEnemies(delta) {
                         applyRandomFreeUpgrade();
                         applyRandomFreeUpgrade();
                         startLevelUp();
+                        player.hp = player.maxHp;
                     } else if (enemy.type === 'voidWeaver' && enemy.isLevel20Boss) {
                         // CORREÇÃO: Limpa o jogo para evitar bugs de física com o jogo parado
                         enemies.length = 0;
