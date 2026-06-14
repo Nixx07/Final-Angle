@@ -11,7 +11,7 @@ export function showVictoryModal() {
 
     if (backToMenuBtn) {
         backToMenuBtn.onclick = () => {
-            window.location.href = 'menu.html';
+            window.location.href = 'game.html';
         };
     }
 }
