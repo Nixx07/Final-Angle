@@ -1,12 +1,20 @@
 import { ctx, canvas, GAME_STATES } from './config.js';
 import { player, game, enemies, projectiles, particles, damageNumbers, pickups } from './state.js';
 import { upgradeIcons } from './icons.js';
+import { getUpgradeMenuLayout } from './upgrades.js';
+
+function getHudScale() {
+    const widthScale = canvas.width / 1280;
+    const heightScale = canvas.height / 720;
+    return Math.max(0.55, Math.min(1, widthScale, heightScale));
+}
 
 function drawDamageNumbers(delta) {
     const timeScale = delta / (1000 / 60);
+    const scale = getHudScale();
 
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 20px Arial';
+    ctx.font = `bold ${Math.round(20 * scale)}px Arial`;
     ctx.textAlign = 'center';
 
     for (let i = damageNumbers.length - 1; i >= 0; i--) {
@@ -48,10 +56,11 @@ function drawProjectileTrails() {
 }
 
 function drawXpBar() {
-    const barWidth = 300;
-    const barHeight = 15;
+    const scale = getHudScale();
+    const barWidth = Math.round(300 * scale);
+    const barHeight = Math.max(10, Math.round(15 * scale));
     const barX = canvas.width / 2 - barWidth / 2;
-    const barY = 40;
+    const barY = Math.round(40 * scale) + 6;
 
     ctx.fillStyle = '#333';
     ctx.fillRect(barX, barY, barWidth, barHeight);
@@ -66,27 +75,35 @@ function drawXpBar() {
 }
 
 function drawLevelText() {
+    const scale = getHudScale();
     ctx.fillStyle = 'white';
-    ctx.font = 'bold 22px Arial';
+    ctx.font = `bold ${Math.round(22 * scale)}px Arial`;
     ctx.textAlign = 'center';
-    ctx.fillText(`NÍVEL ${player.level}`, canvas.width / 2, 30);
+    ctx.fillText(`NÍVEL ${player.level}`, canvas.width / 2, Math.round(30 * scale));
 }
 
 function drawLives() {
+    const scale = getHudScale();
+    const radius = Math.max(7, Math.round(10 * scale));
+    const spacing = Math.max(20, Math.round(30 * scale));
+    const startX = Math.max(18, Math.round(35 * scale));
+    const centerY = Math.max(18, Math.round(35 * scale));
+
     ctx.fillStyle = '#ff5252';
 
     for (let i = 0; i < player.hp; i++) {
         ctx.beginPath();
-        ctx.arc(35 + i * 30, 35, 10, 0, Math.PI * 2);
+        ctx.arc(startX + i * spacing, centerY, radius, 0, Math.PI * 2);
         ctx.fill();
     }
 }
 
 function drawBossHealthBar(enemy) {
-    const barWidth = 420;
-    const barHeight = 18;
+    const scale = getHudScale();
+    const barWidth = Math.round(420 * scale);
+    const barHeight = Math.max(12, Math.round(18 * scale));
     const x = canvas.width / 2 - barWidth / 2;
-    const y = 72;
+    const y = Math.round(72 * scale) + 8;
 
     ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
     ctx.fillRect(x, y, barWidth, barHeight);
@@ -99,7 +116,7 @@ function drawBossHealthBar(enemy) {
     ctx.strokeRect(x, y, barWidth, barHeight);
 
     ctx.fillStyle = 'white';
-    ctx.font = 'bold 18px Arial';
+    ctx.font = `bold ${Math.round(18 * scale)}px Arial`;
     ctx.textAlign = 'center';
     ctx.fillText(enemy.type === 'voidWeaver' ? 'VOID WEAVER' : 'ABYSS CORE', canvas.width / 2, y - 8);
 }
@@ -436,49 +453,51 @@ function drawLevelUpMenu() {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    const cardWidth = 220;
-    const cardHeight = 300;
-    const spacing = 30;
-    const totalWidth = cardWidth * 3 + spacing * 2;
-    const startX = (canvas.width - totalWidth) / 2;
-    const startY = (canvas.height - cardHeight) / 2;
+    const layout = getUpgradeMenuLayout(game.currentUpgradeOptions.length);
+    const titleY = Math.max(34, layout.startY - 28);
 
     if (game.pendingLevelUps > 1) {
+        const titleScale = getHudScale();
         ctx.fillStyle = '#00e5ff';
-        ctx.font = 'bold 22px Arial';
+        ctx.font = `bold ${Math.round(22 * titleScale)}px Arial`;
         ctx.textAlign = 'center';
-        ctx.fillText(`Escolha ${game.pendingLevelUps} upgrades`, canvas.width / 2, startY - 30);
+        ctx.fillText(`Escolha ${game.pendingLevelUps} upgrades`, canvas.width / 2, titleY);
     }
 
     game.currentUpgradeOptions.forEach((option, index) => {
-        const x = startX + index * (cardWidth + spacing);
-        const y = startY;
+        const card = layout.cards[index];
+        if (!card) return;
+        const x = card.x;
+        const y = card.y;
+        const iconSize = layout.useStackLayout ? 44 : 56;
+        const iconOffsetX = x + layout.cardWidth / 2 - iconSize / 2;
 
         ctx.fillStyle = '#263238';
         ctx.strokeStyle = '#00e5ff';
         ctx.lineWidth = 2;
-        ctx.fillRect(x, y, cardWidth, cardHeight);
-        ctx.strokeRect(x, y, cardWidth, cardHeight);
+        ctx.fillRect(x, y, layout.cardWidth, layout.cardHeight);
+        ctx.strokeRect(x, y, layout.cardWidth, layout.cardHeight);
 
         ctx.fillStyle = 'white';
         ctx.textAlign = 'center';
 
         const icon = upgradeIcons[option.id];
         if (icon && icon.complete) {
-            ctx.drawImage(icon, x + cardWidth / 2 - 28, y + 26, 56, 56);
+            ctx.drawImage(icon, iconOffsetX, y + 22, iconSize, iconSize);
         }
 
-        ctx.font = 'bold 20px Arial';
-        ctx.fillText(option.name, x + cardWidth / 2, y + 110);
+        ctx.font = `bold ${layout.useStackLayout ? 18 : 20}px Arial`;
+        ctx.fillText(option.name, x + layout.cardWidth / 2, y + (layout.useStackLayout ? 88 : 110));
 
-        ctx.font = '14px Arial';
-        ctx.fillText(option.desc, x + cardWidth / 2, y + 150);
+        ctx.font = `${layout.useStackLayout ? 13 : 14}px Arial`;
+        ctx.fillText(option.desc, x + layout.cardWidth / 2, y + (layout.useStackLayout ? 118 : 150));
 
         ctx.fillStyle = '#00e5ff';
+        ctx.font = `bold ${layout.useStackLayout ? 13 : 14}px Arial`;
         ctx.fillText(
             `Nível ${player.stats[option.id]} → ${player.stats[option.id] + 1}`,
-            x + cardWidth / 2,
-            y + 260
+            x + layout.cardWidth / 2,
+            y + layout.cardHeight - (layout.useStackLayout ? 16 : 40)
         );
     });
 }
@@ -498,11 +517,12 @@ function drawBossIntroOverlay() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     ctx.fillStyle = blink ? '#ff1744' : '#ffffff';
-    ctx.font = 'bold 56px Arial';
+    const scale = getHudScale();
+    ctx.font = `bold ${Math.round(56 * scale)}px Arial`;
     ctx.textAlign = 'center';
     ctx.fillText('WARNING', canvas.width / 2, canvas.height / 2 - 25);
 
-    ctx.font = 'bold 26px Arial';
+    ctx.font = `bold ${Math.round(26 * scale)}px Arial`;
     ctx.fillText(
         currentBoss && currentBoss.type === 'voidWeaver'
             ? 'VOID WEAVER INCOMING'
@@ -527,11 +547,12 @@ function drawSwarmWarning() {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         ctx.fillStyle = blink ? '#ffee58' : '#ffffff';
-        ctx.font = 'bold 44px Arial';
+        const scale = getHudScale();
+        ctx.font = `bold ${Math.round(44 * scale)}px Arial`;
         ctx.textAlign = 'center';
         ctx.fillText('AVISO', canvas.width / 2, canvas.height / 2 - 18);
 
-        ctx.font = 'bold 24px Arial';
+        ctx.font = `bold ${Math.round(24 * scale)}px Arial`;
         ctx.fillText('ENXAME DETECTADO', canvas.width / 2, canvas.height / 2 + 22);
     }
 }
@@ -540,7 +561,7 @@ function drawGameOver() {
     if (game.state !== GAME_STATES.GAME_OVER) return;
 
     ctx.fillStyle = 'white';
-    ctx.font = '50px Arial';
+    ctx.font = `bold ${Math.round(50 * getHudScale())}px Arial`;
     ctx.textAlign = 'center';
     ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2);
 }
@@ -552,11 +573,12 @@ function drawVictory() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     ctx.fillStyle = '#ffea00';
-    ctx.font = 'bold 56px Arial';
+    const scale = getHudScale();
+    ctx.font = `bold ${Math.round(56 * scale)}px Arial`;
     ctx.textAlign = 'center';
     ctx.fillText('VITÓRIA!', canvas.width / 2, canvas.height / 2 - 20);
 
-    ctx.font = '24px Arial';
+    ctx.font = `${Math.round(24 * scale)}px Arial`;
     ctx.fillStyle = 'white';
     ctx.fillText('Parabéns, você derrotou o boss de nível 20!', canvas.width / 2, canvas.height / 2 + 30);
     ctx.fillText('Voltando ao menu...', canvas.width / 2, canvas.height / 2 + 70);
@@ -565,17 +587,20 @@ function drawVictory() {
 function drawDashHint() {
     if (game.dashHintTimer <= 0) return;
     const isTouchDevice = window.matchMedia?.('(pointer: coarse)').matches;
+    const scale = getHudScale();
 
     ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-    ctx.fillRect(canvas.width / 2 - 210, canvas.height - 120, 420, 60);
+    const boxWidth = Math.round(420 * scale);
+    const boxHeight = Math.max(44, Math.round(60 * scale));
+    ctx.fillRect(canvas.width / 2 - boxWidth / 2, canvas.height - (boxHeight + 32), boxWidth, boxHeight);
 
     ctx.fillStyle = '#00e5ff';
-    ctx.font = 'bold 24px Arial';
+    ctx.font = `bold ${Math.round(24 * scale)}px Arial`;
     ctx.textAlign = 'center';
     ctx.fillText(
         isTouchDevice ? 'Dash liberado! Toque no botão DASH para usar' : 'Dash liberado! Aperte Espaço para usar',
         canvas.width / 2,
-        canvas.height - 80
+        canvas.height - Math.round(42 * scale)
     );
 }
 

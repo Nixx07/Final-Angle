@@ -170,6 +170,25 @@ button:hover {
 }
 
 @media (max-width: 768px) {
+    body {
+        min-height: 100dvh;
+    }
+
+    header {
+        height: 68px;
+        padding: 0 16px;
+        box-sizing: border-box;
+    }
+
+    header h1 {
+        font-size: 1.7rem;
+        text-align: center;
+    }
+
+    .github {
+        display: none;
+    }
+
     .buttons {
         gap: 12px;
         padding: 0 16px;
@@ -189,12 +208,17 @@ button:hover {
         display: flex;
         flex-direction: column;
         align-items: flex-start;
+        gap: 12px;
     }
 
-    .github {
-        right: 16px;
-        top: 18px;
-        transform: none;
+    .analise h3 {
+        margin: 0;
+        font-size: 1.05rem;
+    }
+
+    .modal-container {
+        padding: 16px;
+        box-sizing: border-box;
     }
 
     .modal-tutorial {
@@ -207,5 +231,10 @@ button:hover {
         width: 100%;
         height: auto;
         max-height: 70vh;
+    }
+
+    .btn-fechar-video {
+        top: -32px;
+        font-size: 26px;
     }
 }

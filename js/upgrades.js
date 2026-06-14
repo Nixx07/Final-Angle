@@ -91,6 +91,53 @@ function openUpgradeMenu() {
     }
 }
 
+export function getUpgradeMenuLayout(optionCount = 3) {
+    const useStackLayout = canvas.width < 900 && canvas.height > canvas.width;
+    const spacing = useStackLayout ? 14 : 30;
+
+    if (!useStackLayout) {
+        const cardWidth = 220;
+        const cardHeight = 300;
+        const totalWidth = (cardWidth * optionCount) + (spacing * Math.max(0, optionCount - 1));
+        const startX = (canvas.width - totalWidth) / 2;
+        const startY = (canvas.height - cardHeight) / 2;
+
+        return {
+            cardWidth,
+            cardHeight,
+            spacing,
+            startX,
+            startY,
+            useStackLayout,
+            cards: Array.from({ length: optionCount }, (_, index) => ({
+                x: startX + index * (cardWidth + spacing),
+                y: startY
+            }))
+        };
+    }
+
+    const availableWidth = canvas.width - 32;
+    const availableHeight = canvas.height - 140;
+    const cardWidth = Math.min(320, availableWidth);
+    const cardHeight = Math.min(170, Math.max(120, Math.floor((availableHeight - spacing * (optionCount - 1)) / optionCount)));
+    const totalHeight = (cardHeight * optionCount) + (spacing * Math.max(0, optionCount - 1));
+    const startX = (canvas.width - cardWidth) / 2;
+    const startY = Math.max(70, (canvas.height - totalHeight) / 2);
+
+    return {
+        cardWidth,
+        cardHeight,
+        spacing,
+        startX,
+        startY,
+        useStackLayout,
+        cards: Array.from({ length: optionCount }, (_, index) => ({
+            x: startX,
+            y: startY + index * (cardHeight + spacing)
+        }))
+    };
+}
+
 export function startLevelUp() {
     let levelsGained = 0;
     while (player.currentXp >= player.nextLevelXp) {
@@ -195,20 +242,14 @@ export function prepareBossLevel20Test() {
 export function checkUpgradeClick(event) {
     if (game.state !== GAME_STATES.LEVELING || game.currentUpgradeOptions.length === 0) return;
 
-    const cardWidth = 220;
-    const cardHeight = 300;
-    const spacing = 30;
-
-    const totalWidth = (cardWidth * 3) + (spacing * 2);
-    const startX = (canvas.width - totalWidth) / 2;
-    const startY = (canvas.height - cardHeight) / 2;
+    const layout = getUpgradeMenuLayout(game.currentUpgradeOptions.length);
 
     game.currentUpgradeOptions.forEach((option, index) => {
-        const cardX = startX + index * (cardWidth + spacing);
-        const cardY = startY;
+        const card = layout.cards[index];
+        if (!card) return;
 
-        const clickedInsideX = event.clientX > cardX && event.clientX < cardX + cardWidth;
-        const clickedInsideY = event.clientY > cardY && event.clientY < cardY + cardHeight;
+        const clickedInsideX = event.clientX > card.x && event.clientX < card.x + layout.cardWidth;
+        const clickedInsideY = event.clientY > card.y && event.clientY < card.y + layout.cardHeight;
 
         if (clickedInsideX && clickedInsideY) {
             applyUpgrade(option.id);
