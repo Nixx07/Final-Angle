@@ -4,21 +4,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Final Angle</title>
-    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/menu.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&family=Oswald:wght@200..700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <canvas id="gameCanvas"></canvas>
 
-    <div id="victoryModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="victoryTitle">
-        <div class="modal-content">
-            <h2 id="victoryTitle">Vitória!</h2>
-            <p>Parabéns, você derrotou o boss circulo boladão do mal maligno geométrico lindo cheiroso fedido feio!</p>
-            <button id="backToMenuBtn">Voltar</button>
+    <header>
+        <h1>Final Angle</h1>
+        <a href="https://github.com/Nixx07" target="_blank" class="github">GitHub</a>
+    </header>
+
+    <main>
+
+        <div class="buttons">
+            <form action="index.html">
+                <button class="button">Começar</button>
+            </form>
+            <button id="tutorial" class="button">Tutorial</button>
         </div>
-    </div>
 
-    <script type="module" src="./js/game.js"></script>
-    
+        <div class="modal-container" id="modalTutorial">
+            <div class="modal-tutorial">
+                <button class="btn-fechar" id="fecharTutorial">&times;</button>
+                <h2>Tutorial</h2>
+                <p>Clique esquerdo: Disparo</p>
+                <p>Espaço: Dash (Adicionado apenas na luta contra o boss final de lvl 20)</p>
+                <p class="obs-tutorial">Dash e Disparo são direcionados pelo cursor do mouse</p>
+            </div>
+        </div>
+
+        <div class="analise">
+            <h3>Análise do BRKsEDU. Veja:</h3>
+            <button class="buttonPlay" id="PlayVideo">Play</button>
+        </div>
+
+        <div id="videoModal" class="modal-video oculto">
+            <div class="conteudo-modal">
+                <button id="btnFecharVideo" class="btn-fechar-video">&times;</button>
+                
+                <video src="video/Olha essa geometria.mp4" controls width="100%"></video>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="js/modal-tutorial.js"></script>
+    <script src="js/video.js"></script>
 </body>
 </html>
