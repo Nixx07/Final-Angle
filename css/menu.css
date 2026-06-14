@@ -168,3 +168,44 @@ button:hover {
 .github:hover {
     color: #ffffff;
 }
+
+@media (max-width: 768px) {
+    .buttons {
+        gap: 12px;
+        padding: 0 16px;
+        box-sizing: border-box;
+    }
+
+    .buttons .button,
+    .buttonPlay,
+    #backToMenuBtn {
+        width: min(100%, 280px);
+        height: 64px;
+        font-size: 20px;
+    }
+
+    .analise {
+        margin: 24px 16px 0;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .github {
+        right: 16px;
+        top: 18px;
+        transform: none;
+    }
+
+    .modal-tutorial {
+        width: min(92vw, 400px);
+        padding: 22px 18px;
+        box-sizing: border-box;
+    }
+
+    video {
+        width: 100%;
+        height: auto;
+        max-height: 70vh;
+    }
+}

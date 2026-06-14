@@ -7,15 +7,23 @@ body {
     overflow: hidden;
     font-family: 'Inter', sans-serif;
     color: #e0e0e0;
+    touch-action: none;
+    overscroll-behavior: none;
+    user-select: none;
 }
 
 canvas {
+    position: fixed;
+    inset: 0;
     display: block;
+    width: 100vw;
+    height: 100vh;
     background-color: #1a1a1a;
     cursor: crosshair;
     top: 0;
     left: 0;
     z-index: 1;
+    touch-action: none;
 }
 
 /* Container principal do menu */
@@ -235,4 +243,59 @@ canvas {
 video{
     width: 1000px;
     height: 1000px;
+}
+
+.mobile-controls {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 20;
+    display: none;
+}
+
+.mobile-controls-hint {
+    position: absolute;
+    left: 16px;
+    bottom: 92px;
+    margin: 0;
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: #f5f5f5;
+    font-size: 0.9rem;
+    letter-spacing: 0.02em;
+}
+
+.mobile-action-button {
+    position: absolute;
+    right: 16px;
+    bottom: 16px;
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: linear-gradient(180deg, rgba(255, 225, 0, 0.92), rgba(255, 132, 0, 0.92));
+    color: #101010;
+    font-family: 'Oswald', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3);
+    pointer-events: auto;
+}
+
+.mobile-action-button:active {
+    transform: translateY(1px) scale(0.98);
+}
+
+@media (pointer: coarse) {
+    .mobile-controls {
+        display: block;
+    }
+
+    canvas {
+        cursor: default;
+    }
 }

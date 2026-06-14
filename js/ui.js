@@ -564,6 +564,7 @@ function drawVictory() {
 
 function drawDashHint() {
     if (game.dashHintTimer <= 0) return;
+    const isTouchDevice = window.matchMedia?.('(pointer: coarse)').matches;
 
     ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
     ctx.fillRect(canvas.width / 2 - 210, canvas.height - 120, 420, 60);
@@ -571,7 +572,11 @@ function drawDashHint() {
     ctx.fillStyle = '#00e5ff';
     ctx.font = 'bold 24px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('Dash liberado! Aperte Espaço para usar', canvas.width / 2, canvas.height - 80);
+    ctx.fillText(
+        isTouchDevice ? 'Dash liberado! Toque no botão DASH para usar' : 'Dash liberado! Aperte Espaço para usar',
+        canvas.width / 2,
+        canvas.height - 80
+    );
 }
 
 function drawTestHint() {
