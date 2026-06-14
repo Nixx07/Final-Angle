@@ -1,12 +1,16 @@
 import { canvas } from './config.js';
 import { game, player } from './state.js';
 
+function isTouchDevice() {
+    return window.matchMedia?.('(pointer: coarse)').matches;
+}
+
 export function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
     player.x = canvas.width / 2;
-    player.y = canvas.height - 25;
+    player.y = canvas.height - (isTouchDevice() ? 88 : 25);
 }
 
 export function updatePlayerAngle(mouseX, mouseY) {
